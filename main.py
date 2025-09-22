@@ -29,8 +29,10 @@ def run_game(server_win_rate):
     server_points = 0
     return_points = 0
 
+    max_points = 7
+
     while True:
-        if random.random() < server_win_rate:
+        if random.random() <= server_win_rate:
             server_points += 1
         else:
             return_points += 1
@@ -39,6 +41,10 @@ def run_game(server_win_rate):
             return 'server'
         elif return_points >= 4 and (return_points - server_points == 2):
             return 'return'
+        
+        if server_points + return_points > max_points:
+            # Safety fallback: give win to whoever is ahead
+            return 'server' if server_points > return_points else 'return'
         
 
 
@@ -50,15 +56,20 @@ def run_set(a_win_rate, b_win_rate, a_player: str, b_player: str):
     while True:
         if server == 1:
             normalized_win_rate = a_win_rate
+            winner = run_game(normalized_win_rate)
+
+            if winner == 'server':
+                a_score += 1
+            elif winner == 'return':
+                b_score += 1
         else: 
             normalized_win_rate = b_win_rate
+            winner = run_game(normalized_win_rate)
 
-        winner = run_game(normalized_win_rate)
-
-        if winner == 'server':
-            a_score += 1
-        elif winner == 'return':
-            b_score += 1
+            if winner == 'server':
+                a_score += 1
+            elif winner == 'return':
+                b_score += 1
             
 
         if a_score >= 6 or b_score >= 6:
@@ -87,11 +98,11 @@ def run_match():
 
     for p in players:
         if player_a.lower() in p[0].lower():
-            player_a_win =  p[1]
+            player_a_win = p[1]
 
     for p in players:
         if player_b.lower() in p[0].lower():
-            player_b_win =  p[1]
+            player_b_win = p[1]
 
 
     normalized_a_win_rate = ((player_a_win + (1 - player_b_win)) / 2)
@@ -107,21 +118,17 @@ def run_match():
         elif winner == player_b:
             player_b_set_score += 1
 
-        if player_a_set_score == 3:
+        if player_a_set_score >= 3:
             print(f'Winner of the match is {player_a}')
             print(f'{player_a}: {player_a_set_score}')
             print(f'{player_b}: {player_b_set_score}')
             return
-        elif player_b_set_score == 3:
+        elif player_b_set_score >= 3:
             print(f'Winner of the match is {player_b}')
             print(f'{player_a}: {player_a_set_score}')
             print(f'{player_b}: {player_b_set_score}')
             return
-            
-        if server == 1:
-            server = 2
-        elif server == 2:
-            server = 1
+ 
 
 
 run_match()
