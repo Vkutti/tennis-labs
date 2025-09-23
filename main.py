@@ -1,29 +1,51 @@
 import numpy
 import pandas
 import math
-from flask import Flask, render_template
+from flask import Flask, render_template, request, redirect, url_for
 import random
 
-players = [["Roger Federer", 0.6181684623962715], 
-           ["Novak Djokovic", 0.5947536538180075], 
-           ["Rafael Nadal", 0.5866196318068458], 
-           ["Andy Murray", 0.5639304650385061], 
-           ["Andy Roddick", 0.6390888166198604], 
-           ["Stan Wawrinka", 0.5412835681262631], 
-           ["Lleyton Hewitt", 0.5012052757076787], 
-           ["Gilles Simon", 0.4936153298057834],
-           ["Marat Safin", 0.5278027410227841], 
-           ["Juan Martin del Potro", 0.6000366515792587], 
-           ["Marin Cilic", 0.5631289364226771], 
-           ["Alexander Zverev", 0.6132135038078368], 
-           ["Grigor Dimitrov", 0.5919210039749763], 
-           ["David Ferrer", 0.5369534140019233], 
-           ["Nick Kyrgios", 0.6325506471767043], 
-           ["Daniil Medvedev", 0.5905048030648645], 
-           ["Jannik Sinner", 0.5654574943566698], 
-           ["Frances Tiafoe", 0.5564689245239004], 
-           ["Carlos Alcaraz", 0.5685097899035272], 
+players = [["Roger Federer", 0.7193697480417766, 0.2806302519582235],
+           ["Novak Djokovic", 0.6919147804332736, 0.3080852195667264],
+           ["Rafael Nadal", 0.6848565116264265, 0.3151434883735736],
+           ["Andy Murray", 0.6612316817164237, 0.3387683182835763],
+           ["Andy Roddick", 0.712895230721064, 0.2871047692789361],
+           ["Stan Wawrinka", 0.6636913299390815, 0.33630867006091847],
+           ["Lleyton Hewitt", 0.6314656604029686, 0.36853433959703136],
+           ["Gilles Simon", 0.622119630659578, 0.377880369340422],
+           ["Marat Safin", 0.6393398337713139, 0.3606601662286861],
+           ["Juan Martin del Potro", 0.6798649318577962, 0.3201350681422039],
+           ["Marin Cilic", 0.6706063513200101, 0.3293936486799899],
+           ["Alexander Zverev", 0.672503248397905, 0.327496751602095],
+           ["Grigor Dimitrov", 0.6673108269074414, 0.3326891730925586],
+           ["David Ferrer", 0.6453788747448157, 0.35462112525518436],
+           ["Nick Kyrgios", 0.6978643227244247, 0.3021356772755753],
+           ["Daniil Medvedev", 0.6650707486594905, 0.3349292513405095],
+           ["Jannik Sinner", 0.6809844943953158, 0.31901550560468417],
+           ["Frances Tiafoe", 0.6522051575631265, 0.34779484243687353],
+           ["Carlos Alcaraz", 0.6707661480813749, 0.32923385191862514],
            ]
+
+
+app = Flask(__name__)
+
+@app.route('/')
+def index():
+    return render_template('index.html', winner = "")
+
+
+@app.route('/simulate', methods=['POST'])
+def run_app():
+    if request.method == 'POST':
+        player_a = request.form.get('tennis_players_a')
+        player_b = request.form.get('tennis_players_b')
+
+        return render_template('index.html', winner = run_match(player_a, player_b)[0])
+
+    return render_template('index.html', winner = "")
+
+
+
+
 
 def run_game(server_win_rate):
     server_points = 0
@@ -86,27 +108,32 @@ def run_set(a_win_rate, b_win_rate, a_player: str, b_player: str):
             server = 1
 
 
-def run_match():
+def run_match(a, b):
     player_a_win = 0
     player_b_win = 0
+    player_a_lose = 0
+    player_b_lose = 0
 
     player_a_set_score = 0
     player_b_set_score = 0
 
-    player_a = str(input("Enter the 1st player: "))
-    player_b = str(input("Enter the 2nd player: "))
+    player_a = a
+    player_b = b
 
     for p in players:
         if player_a.lower() in p[0].lower():
             player_a_win = p[1]
+            player_b_lose = p[2]
+
 
     for p in players:
         if player_b.lower() in p[0].lower():
             player_b_win = p[1]
+            player_a_lose = p[2]
 
 
-    normalized_a_win_rate = ((player_a_win + (1 - player_b_win)) / 2)
-    normalized_b_win_rate = ((player_b_win + (1 - player_a_win)) / 2)
+    normalized_a_win_rate = ((player_a_win + (1 - player_b_lose)) / 2)
+    normalized_b_win_rate = ((player_b_win + (1 - player_a_lose)) / 2)
 
     server = random.randint(1, 2)
 
@@ -122,14 +149,17 @@ def run_match():
             print(f'Winner of the match is {player_a}')
             print(f'{player_a}: {player_a_set_score}')
             print(f'{player_b}: {player_b_set_score}')
-            return
+            return list((player_a, player_b))
         elif player_b_set_score >= 3:
             print(f'Winner of the match is {player_b}')
             print(f'{player_a}: {player_a_set_score}')
             print(f'{player_b}: {player_b_set_score}')
-            return
+            return list((player_b, player_a))
  
 
 
-run_match()
 
+
+
+if __name__ == '__main__':
+    app.run(debug=True)

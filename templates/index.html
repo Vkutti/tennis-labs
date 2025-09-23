@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TennisLab</title>
+</head>
+<body>
+    <div>
+        <h1>TennisLab</h1>
+    </div>
+
+    <form action="/simulate" method="post">
+        <div>
+            <select name="tennis_players_a" id="tennis_players_a">
+                <option value="Roger Federer">Roger Federer</option>
+                <option value="Novak Djokovic">Novak Djokovic</option>
+                <option value="Rafael Nadal">Rafael Nadal</option>
+                <option value="Andy Murray">Andy Murray</option>
+                <option value="Andy Roddick">Andy Roddick</option>
+                <option value="Stan Wawrinka">Stan Wawrinka</option>
+                <option value="Lleyton Hewitt">Lleyton Hewitt</option>
+                <option value="Gilles Simon">Gilles Simon</option>
+                <option value="Marat Safin">Marat Safin</option>
+                <option value="Juan Martin del Potro">Juan Martin del Potro</option>
+                <option value="Marin Cilic">Marin Cilic</option>
+                <option value="Alexander Zverev">Alexander Zverev</option>
+                <option value="Grigor Dimitrov">Grigor Dimitrov</option>
+                <option value="David Ferrer">David Ferrer</option>
+                <option value="Nick Kyrgios">Nick Kyrgios</option>
+                <option value="Daniil Medvedev">Daniil Medvedev</option>
+                <option value="Jannik Sinner">Jannik Sinner</option>
+                <option value="Frances Tiafoe">Frances Tiafoe</option>
+                <option value="Carlos Alcaraz">Carlos Alcaraz</option>
+            </select>
+
+            <h1>VS</h1>
+
+            <select name="tennis_players_b" id="tennis_players_b">
+                <option value="Roger Federer">Roger Federer</option>
+                <option value="Novak Djokovic">Novak Djokovic</option>
+                <option value="Rafael Nadal">Rafael Nadal</option>
+                <option value="Andy Murray">Andy Murray</option>
+                <option value="Andy Roddick">Andy Roddick</option>
+                <option value="Stan Wawrinka">Stan Wawrinka</option>
+                <option value="Lleyton Hewitt">Lleyton Hewitt</option>
+                <option value="Gilles Simon">Gilles Simon</option>
+                <option value="Marat Safin">Marat Safin</option>
+                <option value="Juan Martin del Potro">Juan Martin del Potro</option>
+                <option value="Marin Cilic">Marin Cilic</option>
+                <option value="Alexander Zverev">Alexander Zverev</option>
+                <option value="Grigor Dimitrov">Grigor Dimitrov</option>
+                <option value="David Ferrer">David Ferrer</option>
+                <option value="Nick Kyrgios">Nick Kyrgios</option>
+                <option value="Daniil Medvedev">Daniil Medvedev</option>
+                <option value="Jannik Sinner">Jannik Sinner</option>
+                <option value="Frances Tiafoe">Frances Tiafoe</option>
+                <option value="Carlos Alcaraz">Carlos Alcaraz</option>
+            </select>
+        </div>
+
+        <button type="submit">Simulate Match</button>
+    </form>
+
+    <h1>{{ winner }}</h1>
+</body>
+</html>
