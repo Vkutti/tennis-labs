@@ -132,8 +132,8 @@ def run_match(a, b):
             player_a_lose = p[2]
 
 
-    normalized_a_win_rate = ((player_a_win + (1 - player_b_lose)) / 2)
-    normalized_b_win_rate = ((player_b_win + (1 - player_a_lose)) / 2)
+    normalized_a_win_rate = ((player_a_win + (1 - player_b_win)) / 2)
+    normalized_b_win_rate = ((player_b_win + (1 - player_a_win)) / 2)
 
     server = random.randint(1, 2)
 
