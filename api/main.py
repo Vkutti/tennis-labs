@@ -30,9 +30,6 @@ players = [["Roger Federer", 0.7193697480417766, 0.2806302519582235],
 
 
 
-def handler(event, context):
-    return app(event, context)
-
 @app.route('/')
 def index():    
     return render_template('index.html', winner = "")
