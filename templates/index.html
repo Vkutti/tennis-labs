@@ -3,16 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="../static/index.css"/>
     <title>TennisLab</title>
 </head>
+<style>
+
+</style>
 <body>
-    <div>
+    <div class="title">
         <h1>TennisLab</h1>
     </div>
 
     <form action="/simulate" method="post">
-        <div>
+        <div class="versus">
             <select name="tennis_players_a" id="tennis_players_a">
+                <option value="empty">Select a player</option>
                 <option value="Roger Federer">Roger Federer</option>
                 <option value="Novak Djokovic">Novak Djokovic</option>
                 <option value="Rafael Nadal">Rafael Nadal</option>
@@ -37,6 +42,7 @@
             <h1>VS</h1>
 
             <select name="tennis_players_b" id="tennis_players_b">
+                <option value="empty">Select a player</option>
                 <option value="Roger Federer">Roger Federer</option>
                 <option value="Novak Djokovic">Novak Djokovic</option>
                 <option value="Rafael Nadal">Rafael Nadal</option>
@@ -62,6 +68,43 @@
         <button type="submit">Simulate Match</button>
     </form>
 
-    <h1>{{ winner }}</h1>
+    <h1>Winner of the match is {{ winner }}</h1>
+
+    <div class="scoreboard">
+        <div class="header">Centre Court</div>
+        <div class="subheader">
+        <div>Gentlemen's Singles</div>
+        </div>
+
+        <!-- Player 1 -->
+        <div class="player">
+        <div class="info">
+            <!-- <img src="https://flagcdn.com/w20/it.png" alt="Italy" class="flag"> -->
+            <div class="name">{{ player_a }}</div>
+        </div>
+        <div class="sets">
+            <div>{{score_1a}}</div>
+            <div>{{score_2a}}</div>
+            <div>{{score_3a}}</div>
+            <div>{{score_4a}}</div>
+            <div>{{score_5a}}</div>
+        </div>
+        </div>
+
+    <!-- Player 2 -->
+        <div class="player">
+        <div class="info">
+            <!-- <img src="https://flagcdn.com/w20/es.png" alt="Spain" class="flag"> -->
+            <div class="name">{{ player_b }}</div>
+        </div>
+        <div class="sets">
+            <div>{{score_1b}}</div>
+            <div>{{score_2b}}</div>
+            <div>{{score_3b}}</div>
+            <div>{{score_4b}}</div>
+            <div>{{score_5b}}</div>
+        </div>
+        </div>
+    </div>
 </body>
 </html>

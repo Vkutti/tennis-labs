@@ -39,7 +39,22 @@ def run_app():
         player_a = request.form.get('tennis_players_a')
         player_b = request.form.get('tennis_players_b')
 
-        return render_template('index.html', winner = run_match(player_a, player_b)[0])
+        match = run_match(player_a, player_b)
+        scores = match[2]
+
+        return render_template('index.html', winner = match[0], player_a = player_a, player_b = player_b, 
+                               score_1a = scores[0] if len(scores) >= 1 else "", 
+                               score_2a = scores[2] if len(scores) >= 3 else "",
+                               score_3a = scores[4] if len(scores) >= 5 else "",
+                               score_4a = scores[6] if len(scores) >= 7 else "",
+                               score_5a = scores[8] if len(scores) >= 9 else "",
+
+                               score_1b = scores[1] if len(scores) >= 2 else "",
+                               score_2b = scores[3] if len(scores) >= 4 else "",
+                               score_3b = scores[5] if len(scores) >= 6 else "",
+                               score_4b = scores[7] if len(scores) >= 8 else "",
+                               score_5b = scores[9] if len(scores) >= 10 else "",
+                               )
 
     return render_template('index.html', winner = "")
 
@@ -94,13 +109,13 @@ def run_set(a_win_rate, b_win_rate, a_player: str, b_player: str):
                 b_score += 1
             
 
-        if a_score >= 6 or b_score >= 6:
-            if (a_score - 2) >= b_score:
+        if (a_score >= 6 or b_score >= 6) and abs(a_score - b_score) >= 2:
+            if a_score > b_score:
                 print(f'{a_player} scored: {a_score} and {b_player} scored: {b_score}')
-                return a_player
-            elif (b_score - 2) >= a_score:
+                return list((a_player, a_score, b_score))
+            elif b_score > a_score:
                 print(f'{b_player} scored: {b_score} and {a_player} scored: {a_score}')
-                return b_player
+                return list((b_player, a_score, b_score))
             
         if server == 1:
             server = 2
@@ -137,24 +152,30 @@ def run_match(a, b):
 
     server = random.randint(1, 2)
 
+    scores = []
+
     while True:
         winner = run_set(normalized_a_win_rate, normalized_b_win_rate, player_a, player_b)
+        scores.append(winner[1])
+        scores.append(winner[2])
 
-        if winner == player_a:
+        if winner[0] == player_a:
             player_a_set_score += 1
-        elif winner == player_b:
+        elif winner[0] == player_b:
             player_b_set_score += 1
 
         if player_a_set_score >= 3:
             print(f'Winner of the match is {player_a}')
             print(f'{player_a}: {player_a_set_score}')
             print(f'{player_b}: {player_b_set_score}')
-            return list((player_a, player_b))
+            print(list((player_a, player_b, scores)))
+            return list((player_a, player_b, scores))
         elif player_b_set_score >= 3:
             print(f'Winner of the match is {player_b}')
             print(f'{player_a}: {player_a_set_score}')
             print(f'{player_b}: {player_b_set_score}')
-            return list((player_b, player_a))
+            print(list((player_b, player_a, scores)))
+            return list((player_b, player_a, scores))
  
 
 

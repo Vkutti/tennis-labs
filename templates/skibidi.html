@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tennis Scoreboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #4a6b3c;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .scoreboard {
+      background: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      width: 650px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .header {
+      background: #4a6b3c;
+      color: white;
+      padding: 12px 20px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .subheader {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 20px;
+      border-bottom: 1px solid #ddd;
+      font-weight: bold;
+      color: #666;
+    }
+
+    .player {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .player:last-of-type {
+      border-bottom: none;
+    }
+
+    .info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .flag {
+      width: 28px;
+      height: 18px;
+      border: 1px solid #ccc;
+      object-fit: cover;
+    }
+
+    .name {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #006633;
+    }
+
+    .seed {
+      margin-left: 4px;
+      color: #333;
+    }
+
+    .winner {
+      color: #006633;
+      font-size: 1.3rem;
+      font-weight: bold;
+      margin-left: auto;
+      margin-right: 20px;
+    }
+
+    .sets {
+      display: flex;
+      gap: 40px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: purple;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 20px;
+      font-weight: bold;
+      color: #666;
+      border-top: 1px solid #ddd;
+    }
+  </style>
+</head>
+<body>
+  <div class="scoreboard">
+    <div class="header">Centre Court</div>
+    <div class="subheader">
+      <div>Gentlemen's Singles</div>
+      <div>FINAL</div>
+    </div>
+
+    <!-- Player 1 -->
+    <div class="player">
+      <div class="info">
+        <img src="https://flagcdn.com/w20/it.png" alt="Italy" class="flag">
+        <div class="name">J. Sinner <span class="seed">1</span></div>
+      </div>
+      <div class="winner">✔</div>
+      <div class="sets">
+        <div>4</div>
+        <div>6</div>
+        <div>6</div>
+        <div>6</div>
+      </div>
+    </div>
+
+    <!-- Player 2 -->
+    <div class="player">
+      <div class="info">
+        <img src="https://flagcdn.com/w20/es.png" alt="Spain" class="flag">
+        <div class="name">C. Alcaraz <span class="seed">2</span></div>
+      </div>
+      <div class="sets">
+        <div>6</div>
+        <div>4</div>
+        <div>4</div>
+        <div>4</div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <div>DURATION: 3:04</div>
+      <div>COMPLETED</div>
+    </div>
+  </div>
+</body>
+</html>
