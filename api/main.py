@@ -4,6 +4,9 @@ import math
 from flask import Flask, render_template, request, redirect, url_for
 import random
 
+
+app = Flask(__name__)
+
 players = [["Roger Federer", 0.7193697480417766, 0.2806302519582235],
            ["Novak Djokovic", 0.6919147804332736, 0.3080852195667264],
            ["Rafael Nadal", 0.6848565116264265, 0.3151434883735736],
@@ -26,7 +29,6 @@ players = [["Roger Federer", 0.7193697480417766, 0.2806302519582235],
            ]
 
 
-app = Flask(__name__)
 
 def handler(event, context):
     return app(event, context)
