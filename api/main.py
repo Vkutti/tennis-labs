@@ -68,6 +68,8 @@ def run_game(server_win_rate):
     server_points = 0
     return_points = 0
 
+    points = [0, 15, 30, 40, "Game"]
+
     max_points = 7
 
     while True:
@@ -77,11 +79,13 @@ def run_game(server_win_rate):
             return_points += 1
         
         if server_points >= 4 and (server_points - return_points == 2):
+            print(f'{points[server_points]} - {points[return_points]}')
             return 'server'
         elif return_points >= 4 and (return_points - server_points == 2):
+            print(f'{points[server_points]} - {points[return_points]}')
             return 'return'
         
-        if server_points + return_points > max_points:
+        if server_points + return_points >= max_points:
             # Safety fallback: give win to whoever is ahead
             return 'server' if server_points > return_points else 'return'
         
@@ -99,16 +103,20 @@ def run_set(a_win_rate, b_win_rate, a_player: str, b_player: str):
 
             if winner == 'server':
                 a_score += 1
+                print(a_score)
             elif winner == 'return':
                 b_score += 1
+                print(b_score)
         else: 
             normalized_win_rate = b_win_rate
             winner = run_game(normalized_win_rate)
 
             if winner == 'server':
-                a_score += 1
-            elif winner == 'return':
                 b_score += 1
+                print(b_score)
+            elif winner == 'return':
+                a_score += 1
+                print(a_score)
             
 
         if (a_score >= 6 or b_score >= 6) and abs(a_score - b_score) >= 2:
@@ -118,6 +126,12 @@ def run_set(a_win_rate, b_win_rate, a_player: str, b_player: str):
             elif b_score > a_score:
                 print(f'{b_player} scored: {b_score} and {a_player} scored: {a_score}')
                 return list((b_player, a_score, b_score))
+            
+        if a_score == 6 and b_score == 6:
+            if random.random() < normalized_win_rate:
+                return list((a_player, 7, 6))
+            else:
+                return list((b_player, 6, 7))
             
         if server == 1:
             server = 2
@@ -149,8 +163,8 @@ def run_match(a, b):
             player_a_lose = p[2]
 
 
-    normalized_a_win_rate = ((player_a_win + (1 - player_b_win)) / 2)
-    normalized_b_win_rate = ((player_b_win + (1 - player_a_win)) / 2)
+    normalized_a_win_rate = ((player_a_win + (1 - player_b_lose)) / 2)
+    normalized_b_win_rate = ((player_b_win + (1 - player_a_lose)) / 2)
 
     server = random.randint(1, 2)
 
