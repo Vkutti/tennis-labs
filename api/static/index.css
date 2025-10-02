@@ -1,91 +1,110 @@
+/* ---------- Body ---------- */
 body {
-  font-family: Arial, sans-serif;
+  font-family: 'Poppins', Arial, sans-serif;
   background: #2a4830;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start; /* stack from top */
   align-items: center;
   min-height: 100vh;
   margin: 0;
   padding: 20px;
-  gap: 20px; /* space between sections */
+  gap: 20px;
 }
 
+/* ---------- Title ---------- */
 .title h1 {
   color: white;
   font-size: 2.5rem;
-  margin-bottom: 10px;
+  text-align: center;
+  letter-spacing: 2px;
+  font-weight: 700;
 }
 
+/* ---------- Form ---------- */
 form {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 20px;
   background: #fff;
-  padding: 30px 30px;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+  transition: transform 0.2s ease;
 }
+
+form:hover { transform: translateY(-3px); }
 
 .versus {
   display: flex;
-  flex-direction: column; /* stack the selects */
+  flex-direction: column;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
 }
 
 .versus h1 {
   margin: 5px 0;
   font-size: 1.5rem;
   color: #333;
+  font-weight: 600;
 }
 
+/* Dropdowns */
 select {
-  padding: 8px 12px;
-  border-radius: 6px;
+  padding: 10px 14px;
+  border-radius: 8px;
   border: 1px solid #ccc;
-  font-size: 1rem;  
-  width: 250px;
+  font-size: 1rem;
+  width: 260px;
+  outline: none;
+  transition: border-color 0.2s;
 }
 
+select:focus { border-color: #2e7d32; }
+
+/* Button */
 button {
-  padding: 10px 18px;
+  padding: 12px 20px;
   font-size: 1rem;
   background: #006633;
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s ease, transform 0.2s ease;
 }
 
 button:hover {
   background: #004d26;
+  transform: scale(1.05);
 }
 
+/* Winner text */
 h1 {
   color: white;
   margin: 10px 0;
+  font-size: 1.4rem;
+  font-weight: 500;
 }
 
-/* Scoreboard styles */
+/* ---------- Scoreboard ---------- */
 .scoreboard {
-  margin-top: 10px; /* push it to the bottom */
+  margin-top: 10px;
   background: #fff;
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
   width: 650px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
 .header {
-  background: #4a6b3c;
+  background: #145214;
   color: white;
-  padding: 12px 20px;
+  padding: 14px 20px;
   font-size: 1.2rem;
   font-weight: bold;
   text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .subheader {
@@ -93,34 +112,32 @@ h1 {
   justify-content: center;
   padding: 12px 20px;
   border-bottom: 1px solid #ddd;
-  font-weight: bold;
-  color: #666;
+  font-weight: 600;
+  color: #444;
 }
 
+/* Player row */
 .player {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 14px 20px;
   border-bottom: 1px solid #ddd;
+  transition: transform 0.2s ease;
 }
 
-.player:last-of-type {
-  border-bottom: none;
+.player:last-of-type { border-bottom: none; }
+
+.player.winner.final-highlight {
+  animation: finalRowExpand 0.5s ease forwards;
 }
 
+/* Player info */
 .info {
   display: flex;
   align-items: center;
   gap: 10px;
   flex: 1;
-}
-
-.flag {
-  width: 28px;
-  height: 18px;
-  border: 1px solid #ccc;
-  object-fit: cover;
 }
 
 .name {
@@ -129,10 +146,80 @@ h1 {
   color: #006633;
 }
 
+/* Sets */
+/* Sets */
 .sets {
   display: flex;
   gap: 40px;
-  font-size: 1.2rem;
+  font-size: 1.8rem; /* increased from 1.2rem */
   font-weight: bold;
-  color: purple;
+  color: #333;
+}
+
+.sets div {
+  display: inline-block;
+  min-width: 30px;      /* slightly wider for bigger numbers */
+  text-align: center;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 0.3s, transform 0.2s;
+  font-size: 1.8rem;    /* match parent, bigger numbers */
+  font-weight: 700;
+}
+
+.sets div.show {
+  animation: fadeGrow 0.4s ease forwards;
+}
+
+@keyframes fadeGrow {
+  0% { opacity: 0; transform: scale(0.8); }
+  60% { opacity: 1; transform: scale(1.2); color: #145214; }
+  100% { opacity: 1; transform: scale(1); color: #333; }
+}
+
+/* Winner of a set */
+.sets div.winner-set {
+  animation: winnerPulse 0.4s ease;
+  font-weight: bold;
+  color: #145214;
+}
+
+@keyframes winnerPulse {
+  0% { transform: scale(1); color: #333; }
+  50% { transform: scale(1.4); color: #145214; }
+  100% { transform: scale(1); color: #145214; }
+}
+
+/* Highlight final winner row */
+.player.winner {
+  background: #e6f7e9;
+  animation: highlightFade 1s ease-in-out;
+}
+
+@keyframes highlightFade {
+  from { background: #c8e6c9; }
+  to { background: #e6f7e9; }
+}
+
+/* Expand final row */
+@keyframes finalRowExpand {
+  0% { background: #e6f7e9; transform: scale(1); }
+  50% { background: #c8e6c9; transform: scale(1.02); }
+  100% { background: #e6f7e9; transform: scale(1); }
+}
+
+/* Optional: Tennis ball animation */
+.ball-container { position: relative; height: 100px; margin: 10px auto 20px auto; }
+.ball {
+  width: 40px; height: 40px;
+  background: radial-gradient(circle at 30% 30%, #ffe600, #d4b200);
+  border-radius: 50%;
+  position: absolute; left: 50%;
+  transform: translateX(-50%);
+  animation: bounce 1s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { top: 0; }
+  50% { top: 60px; }
 }
