@@ -173,21 +173,21 @@ h1 {
 
 @keyframes fadeGrow {
   0% { opacity: 0; transform: scale(0.8); }
-  60% { opacity: 1; transform: scale(1.2); color: #145214; }
+  50% { opacity: 1; transform: scale(1.2); color: #145214; }
   100% { opacity: 1; transform: scale(1); color: #333; }
 }
 
 /* Winner of a set */
 .sets div.winner-set {
-  animation: winnerPulse 0.4s ease;
+  animation: winnerPulse 0.4s ease-in-out;
   font-weight: bold;
-  color: #145214;
+  color: purple;
 }
 
 @keyframes winnerPulse {
   0% { transform: scale(1); color: #333; }
-  50% { transform: scale(1.4); color: #145214; }
-  100% { transform: scale(1); color: #145214; }
+  50% { transform: scale(1.4); color: purple; }
+  100% { transform: scale(1); color: purple; }
 }
 
 /* Highlight final winner row */
