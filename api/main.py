@@ -61,33 +61,54 @@ def run_app():
     return render_template('index.html', winner = "")
 
 
+def run_tiebreak(a_win_rate, b_win_rate, a_player: str, b_player: str):
+    a_points = 0
+    b_points = 0
+    total_points = 0
+    server = 1  # Player A serves first point in the tiebreak
+    
+    while True:
+        # Determine current server win rate
+        if server == 1:
+            win_rate = a_win_rate
+            winner = 'a' if random.random() <= win_rate else 'b'
+        else:
+            win_rate = b_win_rate
+            winner = 'b' if random.random() <= win_rate else 'a'
+        
+        # Award point
+        if winner == 'a':
+            a_points += 1
+        else:
+            b_points += 1
+        
+        # Check for win condition
+        if (a_points >= 7 or b_points >= 7) and abs(a_points - b_points) >= 2:
+            if a_points > b_points:
+                return list((a_player, 7, b_points))
+            else:
+                return list((b_player, a_points, 7))
+        
+        # Alternate serve: first after 1 point, then every 2 points
+        total_points += 1
+        if total_points == 1 or total_points % 2 == 1:
+            server = 2 if server == 1 else 1
 
 
 
 def run_game(server_win_rate):
-    server_points = 0
-    return_points = 0
-
-    points = [0, 15, 30, 40, "Game"]
-
-    max_points = 7
-
+    server_points, return_points = 0, 0
+    
     while True:
         if random.random() <= server_win_rate:
             server_points += 1
         else:
             return_points += 1
         
-        if server_points >= 4 and (server_points - return_points == 2):
-            print(f'{points[server_points]} - {points[return_points]}')
-            return 'server'
-        elif return_points >= 4 and (return_points - server_points == 2):
-            print(f'{points[server_points]} - {points[return_points]}')
-            return 'return'
-        
-        if server_points + return_points >= max_points:
-            # Safety fallback: give win to whoever is ahead
-            return 'server' if server_points > return_points else 'return'
+        if server_points >= 4 or return_points >= 4:
+            if abs(server_points - return_points) >= 2:
+                return 'server' if server_points > return_points else 'return'
+
         
 
 
@@ -128,10 +149,8 @@ def run_set(a_win_rate, b_win_rate, a_player: str, b_player: str):
                 return list((b_player, a_score, b_score))
             
         if a_score == 6 and b_score == 6:
-            if random.random() < normalized_win_rate:
-                return list((a_player, 7, 6))
-            else:
-                return list((b_player, 6, 7))
+            return run_tiebreak(a_win_rate, b_win_rate, a_player, b_player)
+
             
         if server == 1:
             server = 2
