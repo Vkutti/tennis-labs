@@ -83,11 +83,11 @@ def run_tiebreak(a_win_rate, b_win_rate, a_player: str, b_player: str):
             b_points += 1
         
         # Check for win condition
-        if (a_points >= 7 or b_points >= 7) and abs(a_points - b_points) >= 2:
+        if (a_points >= 6 or b_points >= 6) and abs(a_points - b_points) >= 2:
             if a_points > b_points:
-                return list((a_player, 7, b_points))
+                return list((a_player, 6, b_points))
             else:
-                return list((b_player, a_points, 7))
+                return list((b_player, a_points, 6))
         
         # Alternate serve: first after 1 point, then every 2 points
         total_points += 1
