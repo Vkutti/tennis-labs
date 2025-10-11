@@ -43,24 +43,24 @@ def run_app():
 
         if player_a or player_b == "empty":
             return render_template('index.html', winner = "None")
+        else:
 
+            match = run_match(player_a, player_b)
+            scores = match[2]
 
-        match = run_match(player_a, player_b)
-        scores = match[2]
+            return render_template('index.html', winner = match[0], player_a = player_a, player_b = player_b, 
+                                score_1a = scores[0] if len(scores) >= 1 else "", 
+                                score_2a = scores[2] if len(scores) >= 3 else "",
+                                score_3a = scores[4] if len(scores) >= 5 else "",
+                                score_4a = scores[6] if len(scores) >= 7 else "",
+                                score_5a = scores[8] if len(scores) >= 9 else "",
 
-        return render_template('index.html', winner = match[0], player_a = player_a, player_b = player_b, 
-                               score_1a = scores[0] if len(scores) >= 1 else "", 
-                               score_2a = scores[2] if len(scores) >= 3 else "",
-                               score_3a = scores[4] if len(scores) >= 5 else "",
-                               score_4a = scores[6] if len(scores) >= 7 else "",
-                               score_5a = scores[8] if len(scores) >= 9 else "",
-
-                               score_1b = scores[1] if len(scores) >= 2 else "",
-                               score_2b = scores[3] if len(scores) >= 4 else "",
-                               score_3b = scores[5] if len(scores) >= 6 else "",
-                               score_4b = scores[7] if len(scores) >= 8 else "",
-                               score_5b = scores[9] if len(scores) >= 10 else "",
-                               )
+                                score_1b = scores[1] if len(scores) >= 2 else "",
+                                score_2b = scores[3] if len(scores) >= 4 else "",
+                                score_3b = scores[5] if len(scores) >= 6 else "",
+                                score_4b = scores[7] if len(scores) >= 8 else "",
+                                score_5b = scores[9] if len(scores) >= 10 else "",
+                                )
 
     return render_template('index.html', winner = "None")
 
