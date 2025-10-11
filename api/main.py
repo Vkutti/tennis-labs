@@ -41,6 +41,10 @@ def run_app():
         player_a = request.form.get('tennis_players_a')
         player_b = request.form.get('tennis_players_b')
 
+        if player_a or player_a == "empty":
+            return render_template('index.html', winner = "None")
+
+
         match = run_match(player_a, player_b)
         scores = match[2]
 
@@ -58,7 +62,7 @@ def run_app():
                                score_5b = scores[9] if len(scores) >= 10 else "",
                                )
 
-    return render_template('index.html', winner = "")
+    return render_template('index.html', winner = "None")
 
 
 def run_tiebreak(a_win_rate, b_win_rate, a_player: str, b_player: str):
