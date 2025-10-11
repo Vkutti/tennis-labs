@@ -41,7 +41,7 @@ def run_app():
         player_a = request.form.get('tennis_players_a')
         player_b = request.form.get('tennis_players_b')
 
-        if player_a or player_b == "empty":
+        if player_a == "empty" or player_b == "empty":
             return render_template('index.html', winner = "None")
         else:
 
