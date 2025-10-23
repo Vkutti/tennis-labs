@@ -4,7 +4,6 @@ import math
 from flask import Flask, render_template, request, redirect, url_for
 import random
 
-
 app = Flask(__name__)
 
 players = [["Roger Federer", 0.7193697480417766, 0.2806302519582235],
@@ -29,7 +28,6 @@ players = [["Roger Federer", 0.7193697480417766, 0.2806302519582235],
            ]
 
 
-
 @app.route('/')
 def index():    
     return render_template('index.html', winner = "")
@@ -44,7 +42,6 @@ def run_app():
         if player_a == "empty" or player_b == "empty":
             return render_template('index.html', winner = "None")
         else:
-
             match = run_match(player_a, player_b)
             scores = match[2]
 
@@ -69,10 +66,9 @@ def run_tiebreak(a_win_rate, b_win_rate, a_player: str, b_player: str):
     a_points = 0
     b_points = 0
     total_points = 0
-    server = 1  # Player A serves first point in the tiebreak
+    server = random.randint(1, 2)
     
     while True:
-        # Determine current server win rate
         if server == 1:
             win_rate = a_win_rate
             winner = 'a' if random.random() <= win_rate else 'b'
@@ -80,24 +76,20 @@ def run_tiebreak(a_win_rate, b_win_rate, a_player: str, b_player: str):
             win_rate = b_win_rate
             winner = 'b' if random.random() <= win_rate else 'a'
         
-        # Award point
         if winner == 'a':
             a_points += 1
         else:
             b_points += 1
         
-        # Check for win condition
         if (a_points >= 6 or b_points >= 6) and abs(a_points - b_points) >= 2:
             if a_points > b_points:
                 return list((a_player, 6, b_points))
             else:
                 return list((b_player, a_points, 6))
         
-        # Alternate serve: first after 1 point, then every 2 points
         total_points += 1
         if total_points == 1 or total_points % 2 == 1:
             server = 2 if server == 1 else 1
-
 
 
 def run_game(server_win_rate):
@@ -113,8 +105,6 @@ def run_game(server_win_rate):
             if abs(server_points - return_points) >= 2:
                 return 'server' if server_points > return_points else 'return'
 
-        
-
 
 def run_set(a_win_rate, b_win_rate, a_player: str, b_player: str):
     a_score = 0
@@ -128,33 +118,31 @@ def run_set(a_win_rate, b_win_rate, a_player: str, b_player: str):
 
             if winner == 'server':
                 a_score += 1
-                print(a_score)
+                # print(a_score)
             elif winner == 'return':
                 b_score += 1
-                print(b_score)
+                # print(b_score)
         else: 
             normalized_win_rate = b_win_rate
             winner = run_game(normalized_win_rate)
 
             if winner == 'server':
                 b_score += 1
-                print(b_score)
+                # print(b_score)
             elif winner == 'return':
                 a_score += 1
-                print(a_score)
+                # print(a_score)
             
-
         if (a_score >= 6 or b_score >= 6) and abs(a_score - b_score) >= 2:
             if a_score > b_score:
-                print(f'{a_player} scored: {a_score} and {b_player} scored: {b_score}')
+                # print(f'{a_player} scored: {a_score} and {b_player} scored: {b_score}')
                 return list((a_player, a_score, b_score))
             elif b_score > a_score:
-                print(f'{b_player} scored: {b_score} and {a_player} scored: {a_score}')
+                # print(f'{b_player} scored: {b_score} and {a_player} scored: {a_score}')
                 return list((b_player, a_score, b_score))
             
         if a_score == 6 and b_score == 6:
             return run_tiebreak(a_win_rate, b_win_rate, a_player, b_player)
-
             
         if server == 1:
             server = 2
@@ -185,9 +173,8 @@ def run_match(a, b):
             player_b_win = p[1]
             player_a_lose = p[2]
 
-
-    normalized_a_win_rate = ((player_a_win + (1 - player_b_lose)) / 2)
-    normalized_b_win_rate = ((player_b_win + (1 - player_a_lose)) / 2)
+    normalized_a_win_rate = ((player_a_win + player_a_lose) / (player_a_win + player_b_win))
+    normalized_b_win_rate = ((player_b_win + player_b_lose) / (player_a_win + player_b_win))
 
     server = random.randint(1, 2)
 
@@ -204,21 +191,18 @@ def run_match(a, b):
             player_b_set_score += 1
 
         if player_a_set_score >= 3:
-            print(f'Winner of the match is {player_a}')
-            print(f'{player_a}: {player_a_set_score}')
-            print(f'{player_b}: {player_b_set_score}')
-            print(list((player_a, player_b, scores)))
+            # print(f'Winner of the match is {player_a}')
+            # print(f'{player_a}: {player_a_set_score}')
+            # print(f'{player_b}: {player_b_set_score}')
+            # print(list((player_a, player_b, scores)))
             return list((player_a, player_b, scores))
+
         elif player_b_set_score >= 3:
-            print(f'Winner of the match is {player_b}')
-            print(f'{player_a}: {player_a_set_score}')
-            print(f'{player_b}: {player_b_set_score}')
-            print(list((player_b, player_a, scores)))
+            # print(f'Winner of the match is {player_b}')
+            # print(f'{player_a}: {player_a_set_score}')
+            # print(f'{player_b}: {player_b_set_score}')
+            # print(list((player_b, player_a, scores)))
             return list((player_b, player_a, scores))
- 
-
-
-
 
 
 if __name__ == '__main__':

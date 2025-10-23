@@ -134,7 +134,7 @@ function animateMatch() {
         scoreA.classList.remove("winner-set");
         scoreB.classList.remove("winner-set");
       }
-    }, i * 1200);
+    }, i * 200);
   });
 
   // Highlight final match winner
@@ -143,7 +143,7 @@ function animateMatch() {
     if (finalWinner) {
       finalWinner.classList.add("final-highlight");
     }
-  }, playerA.length * 1200 + 500);
+  }, playerA.length * 1200 + 100);
 }
 
 // Only one onload function
