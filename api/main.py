@@ -5,7 +5,7 @@ from flask import Flask, render_template, request, redirect, url_for
 import random
 
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
 
 players = [["Roger Federer", 0.7193697480417766, 0.2806302519582235],
            ["Novak Djokovic", 0.6919147804332736, 0.3080852195667264],
