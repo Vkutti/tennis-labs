@@ -46,7 +46,7 @@ def run_app():
             match = run_match(player_a, player_b)
             scores = match[2]
 
-            return render_template('index.html', winner = match[0], player_a = player_a, player_b = player_b, 
+            return render_template('results.html', winner = match[0], player_a = player_a, player_b = player_b, 
                                 score_1a = scores[0] if len(scores) >= 1 else "", 
                                 score_2a = scores[2] if len(scores) >= 3 else "",
                                 score_3a = scores[4] if len(scores) >= 5 else "",
@@ -216,4 +216,4 @@ def run_match(a, b):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
