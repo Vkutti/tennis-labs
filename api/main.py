@@ -4,7 +4,6 @@ import math
 from flask import Flask, render_template, request, redirect, url_for
 import random
 
-
 app = Flask(__name__, static_folder='static')
 
 players = [["Roger Federer", 0.7193697480417766, 0.2806302519582235],
@@ -44,7 +43,6 @@ def run_app():
         if player_a == "empty" or player_b == "empty":
             return render_template('index.html', winner = "None")
         else:
-
             match = run_match(player_a, player_b)
             scores = match[2]
 
