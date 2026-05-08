@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" type="text/css" href="/static/index.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <title>TennisLab</title>
 
   <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
@@ -15,97 +18,118 @@
 
 </head>
   <body>
-    <div class="title">
-      <h1>TennisLab</h1>
+    <div class="aurora-bg" aria-hidden="true">
+      <span class="aurora-layer aurora-layer-1"></span>
+      <span class="aurora-layer aurora-layer-2"></span>
+      <span class="aurora-layer aurora-layer-3"></span>
     </div>
 
-    <form action="/simulate" method="post">
-      <div class="versus">
-        <select name="tennis_players_a" id="tennis_players_a">
-          <option value="empty">Select a player</option>
-          <option value="Roger Federer">Roger Federer</option>
-          <option value="Novak Djokovic">Novak Djokovic</option>
-          <option value="Rafael Nadal">Rafael Nadal</option>
-          <option value="Andy Murray">Andy Murray</option>
-          <option value="Andy Roddick">Andy Roddick</option>
-          <option value="Stan Wawrinka">Stan Wawrinka</option>
-          <option value="Lleyton Hewitt">Lleyton Hewitt</option>
-          <option value="Gilles Simon">Gilles Simon</option>
-          <option value="Marat Safin">Marat Safin</option>
-          <option value="Juan Martin del Potro">Juan Martin del Potro</option>
-          <option value="Marin Cilic">Marin Cilic</option>
-          <option value="Alexander Zverev">Alexander Zverev</option>
-          <option value="Grigor Dimitrov">Grigor Dimitrov</option>
-          <option value="David Ferrer">David Ferrer</option>
-          <option value="Nick Kyrgios">Nick Kyrgios</option>
-          <option value="Daniil Medvedev">Daniil Medvedev</option>
-          <option value="Jannik Sinner">Jannik Sinner</option>
-          <option value="Frances Tiafoe">Frances Tiafoe</option>
-          <option value="Carlos Alcaraz">Carlos Alcaraz</option>
-          <option value="Ben Shelton">Ben Shelton</option>
+    <div class="page-loader" id="page-loader" aria-hidden="true">
+      <div class="loader-orb" aria-hidden="true"></div>
+      <p>Simulating match...</p>
+    </div>
 
-        </select>
-
-        <h1>VS</h1>
-
-        <select name="tennis_players_b" id="tennis_players_b">
-          <option value="empty">Select a player</option>
-          <option value="Roger Federer">Roger Federer</option>
-          <option value="Novak Djokovic">Novak Djokovic</option>
-          <option value="Rafael Nadal">Rafael Nadal</option>
-          <option value="Andy Murray">Andy Murray</option>
-          <option value="Andy Roddick">Andy Roddick</option>
-          <option value="Stan Wawrinka">Stan Wawrinka</option>
-          <option value="Lleyton Hewitt">Lleyton Hewitt</option>
-          <option value="Gilles Simon">Gilles Simon</option>
-          <option value="Marat Safin">Marat Safin</option>
-          <option value="Juan Martin del Potro">Juan Martin del Potro</option>
-          <option value="Marin Cilic">Marin Cilic</option>
-          <option value="Alexander Zverev">Alexander Zverev</option>
-          <option value="Grigor Dimitrov">Grigor Dimitrov</option>
-          <option value="David Ferrer">David Ferrer</option>
-          <option value="Nick Kyrgios">Nick Kyrgios</option>
-          <option value="Daniil Medvedev">Daniil Medvedev</option>
-          <option value="Jannik Sinner">Jannik Sinner</option>
-          <option value="Frances Tiafoe">Frances Tiafoe</option>
-          <option value="Carlos Alcaraz">Carlos Alcaraz</option>
-          <option value="Ben Shelton">Ben Shelton</option>
-        </select>
+    <div class="page-shell">
+      <div class="title fade-in-up">
+        <p class="eyebrow">Match Intelligence</p>
+        <h1>
+          TennisLab
+        </h1>
       </div>
 
-      <button type="submit">Simulate Match</button>
+      <form action="/simulate" method="post" class="match-form fade-in-up" style="animation-delay: 120ms;">
+        <div class="versus">
+          <div class="field-group">
+            <label for="tennis_players_a">Player A</label>
+            <select name="tennis_players_a" id="tennis_players_a">
+              <option value="empty">Select a player</option>
+              <option value="Roger Federer">Roger Federer</option>
+              <option value="Novak Djokovic">Novak Djokovic</option>
+              <option value="Rafael Nadal">Rafael Nadal</option>
+              <option value="Andy Murray">Andy Murray</option>
+              <option value="Andy Roddick">Andy Roddick</option>
+              <option value="Stan Wawrinka">Stan Wawrinka</option>
+              <option value="Lleyton Hewitt">Lleyton Hewitt</option>
+              <option value="Gilles Simon">Gilles Simon</option>
+              <option value="Marat Safin">Marat Safin</option>
+              <option value="Juan Martin del Potro">Juan Martin del Potro</option>
+              <option value="Marin Cilic">Marin Cilic</option>
+              <option value="Alexander Zverev">Alexander Zverev</option>
+              <option value="Grigor Dimitrov">Grigor Dimitrov</option>
+              <option value="David Ferrer">David Ferrer</option>
+              <option value="Nick Kyrgios">Nick Kyrgios</option>
+              <option value="Daniil Medvedev">Daniil Medvedev</option>
+              <option value="Jannik Sinner">Jannik Sinner</option>
+              <option value="Frances Tiafoe">Frances Tiafoe</option>
+              <option value="Carlos Alcaraz">Carlos Alcaraz</option>
+              <option value="Ben Shelton">Ben Shelton</option>
+            </select>
+          </div>
 
-    </form>
+          <h1 class="vs-badge">VS</h1>
 
-    <h1>Winner of the match is {{ winner }}</h1>
-
-    <div class="scoreboard">
-      <div class="header">Centre Court</div>
-      <div class="subheader">Gentlemen's Singles</div>
-
-      <div class="player {% if winner == player_a %} winner {% endif %}">
-        <div class="info">
-          <div class="name">{{ player_a }}</div>
+          <div class="field-group">
+            <label for="tennis_players_b">Player B</label>
+            <select name="tennis_players_b" id="tennis_players_b">
+              <option value="empty">Select a player</option>
+              <option value="Roger Federer">Roger Federer</option>
+              <option value="Novak Djokovic">Novak Djokovic</option>
+              <option value="Rafael Nadal">Rafael Nadal</option>
+              <option value="Andy Murray">Andy Murray</option>
+              <option value="Andy Roddick">Andy Roddick</option>
+              <option value="Stan Wawrinka">Stan Wawrinka</option>
+              <option value="Lleyton Hewitt">Lleyton Hewitt</option>
+              <option value="Gilles Simon">Gilles Simon</option>
+              <option value="Marat Safin">Marat Safin</option>
+              <option value="Juan Martin del Potro">Juan Martin del Potro</option>
+              <option value="Marin Cilic">Marin Cilic</option>
+              <option value="Alexander Zverev">Alexander Zverev</option>
+              <option value="Grigor Dimitrov">Grigor Dimitrov</option>
+              <option value="David Ferrer">David Ferrer</option>
+              <option value="Nick Kyrgios">Nick Kyrgios</option>
+              <option value="Daniil Medvedev">Daniil Medvedev</option>
+              <option value="Jannik Sinner">Jannik Sinner</option>
+              <option value="Frances Tiafoe">Frances Tiafoe</option>
+              <option value="Carlos Alcaraz">Carlos Alcaraz</option>
+              <option value="Ben Shelton">Ben Shelton</option>
+            </select>
+          </div>
         </div>
-        <div class="sets">
-          <div>{{ score_1a }}</div>
-          <div>{{ score_2a }}</div>
-          <div>{{ score_3a }}</div>
-          <div>{{ score_4a }}</div>
-          <div>{{ score_5a }}</div>
-        </div>
-      </div>
+        <button type="submit">
+          <span class="button-spinner" aria-hidden="true"></span>
+          <span class="button-label">Simulate Match</span>
+        </button>
+      </form>
 
-      <div class="player {% if winner == player_b %} winner {% endif %}">
-        <div class="info">
-          <div class="name">{{ player_b }}</div>
+      <h2 class="winner-title fade-in-up" style="animation-delay: 220ms;">
+        <span class="winner-icon" aria-hidden="true">🏆</span>
+        Winner: <span>{{ winner }}</span>
+      </h2>
+
+      <div class="scoreboard fade-in-up" style="animation-delay: 300ms;">
+        <div class="header">Centre Court</div>
+        <div class="subheader">Gentlemen's Singles</div>
+
+        <div class="player {% if winner == player_a %} winner {% endif %}">
+          <div class="info">
+            <div class="name">{{ player_a }}</div>
+          </div>
+          <div class="sets">
+            {% for set_row in set_rows %}
+              <div class="set-cell {% if not set_row.played %}empty-set{% endif %}" data-played="{{ 1 if set_row.played else 0 }}">{{ set_row.a if set_row.played else "—" }}</div>
+            {% endfor %}
+          </div>
         </div>
-        <div class="sets">
-          <div>{{ score_1b }}</div>
-          <div>{{ score_2b }}</div>
-          <div>{{ score_3b }}</div>
-          <div>{{ score_4b }}</div>
-          <div>{{ score_5b }}</div>
+
+        <div class="player {% if winner == player_b %} winner {% endif %}">
+          <div class="info">
+            <div class="name">{{ player_b }}</div>
+          </div>
+          <div class="sets">
+            {% for set_row in set_rows %}
+              <div class="set-cell {% if not set_row.played %}empty-set{% endif %}" data-played="{{ 1 if set_row.played else 0 }}">{{ set_row.b if set_row.played else "—" }}</div>
+            {% endfor %}
+          </div>
         </div>
       </div>
     </div>
@@ -113,16 +137,27 @@
     <script>
       function animateMatch() {
         const players = document.querySelectorAll(".player");
-        const playerA = players[0].querySelectorAll(".sets div");
-        const playerB = players[1].querySelectorAll(".sets div");
+        if (players.length < 2) return;
+
+        const setsAContainer = players[0].querySelector(".sets");
+        const setsBContainer = players[1].querySelector(".sets");
+        if (!setsAContainer || !setsBContainer) return;
+
+        setsAContainer.classList.add("is-animating");
+        setsBContainer.classList.add("is-animating");
+
+        const playerA = setsAContainer.querySelectorAll("div");
+        const playerB = setsBContainer.querySelectorAll("div");
+        let revealIndex = 0;
 
         playerA.forEach((scoreA, i) => {
           const scoreB = playerB[i];
           if (!scoreA || !scoreB) return;
+          if (scoreA.dataset.played !== "1" || scoreB.dataset.played !== "1") return;
 
           setTimeout(() => {
-            scoreA.style.opacity = 1;
-            scoreB.style.opacity = 1;
+            scoreA.classList.add("show");
+            scoreB.classList.add("show");
 
             const valA = parseInt(scoreA.innerText) || 0;
             const valB = parseInt(scoreB.innerText) || 0;
@@ -137,7 +172,8 @@
               scoreA.classList.remove("winner-set");
               scoreB.classList.remove("winner-set");
             }
-          }, i * 1000);
+          }, revealIndex * 700);
+          revealIndex += 1;
         });
 
         setTimeout(() => {
@@ -145,11 +181,12 @@
           if (finalWinner) {
             finalWinner.classList.add("final-highlight");
           }
-        }, playerA.length * 1000);
+        }, revealIndex * 700 + 120);
       }
 
       window.onload = animateMatch;
     </script>
+    <script src="/static/ui.js"></script>
     
   </body>
 </html>

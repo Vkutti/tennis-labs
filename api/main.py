@@ -5,6 +5,26 @@ from flask import Flask, render_template, request, redirect, url_for
 import random
 
 app = Flask(__name__, static_folder='static')
+app.config["TEMPLATES_AUTO_RELOAD"] = True
+app.jinja_env.auto_reload = True
+
+
+def build_set_rows(scores, max_sets=5):
+    player_a_sets = scores[0::2]
+    player_b_sets = scores[1::2]
+    set_rows = []
+
+    for i in range(max_sets):
+        played = i < len(player_a_sets) and i < len(player_b_sets)
+        set_rows.append(
+            {
+                "a": player_a_sets[i] if played else "",
+                "b": player_b_sets[i] if played else "",
+                "played": played,
+            }
+        )
+
+    return set_rows
 
 players = [
     ["Roger Federer", 0.7078210183876008, 0.2921789816123992, 7.879746835443038, 1.8424753867791843],
@@ -47,20 +67,15 @@ def run_app():
         else:
             match = run_match(player_a, player_b)
             scores = match[2]
+            set_rows = build_set_rows(scores)
 
-            return render_template('results.html', winner = match[0], player_a = player_a, player_b = player_b, 
-                                score_1a = scores[0] if len(scores) >= 1 else "", 
-                                score_2a = scores[2] if len(scores) >= 3 else "",
-                                score_3a = scores[4] if len(scores) >= 5 else "",
-                                score_4a = scores[6] if len(scores) >= 7 else "",
-                                score_5a = scores[8] if len(scores) >= 9 else "",
-
-                                score_1b = scores[1] if len(scores) >= 2 else "",
-                                score_2b = scores[3] if len(scores) >= 4 else "",
-                                score_3b = scores[5] if len(scores) >= 6 else "",
-                                score_4b = scores[7] if len(scores) >= 8 else "",
-                                score_5b = scores[9] if len(scores) >= 10 else "",
-                                )
+            return render_template(
+                'results.html',
+                winner=match[0],
+                player_a=player_a,
+                player_b=player_b,
+                set_rows=set_rows,
+            )
 
     return render_template('index.html', winner = "None")
 
