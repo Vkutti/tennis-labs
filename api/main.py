@@ -1,8 +1,9 @@
-import numpy
-import pandas
+import numpy as np
+import pandas as pd
 import math
 from flask import Flask, render_template, request, redirect, url_for
 import random
+import json
 
 app = Flask(__name__, static_folder='static')
 app.config["TEMPLATES_AUTO_RELOAD"] = True
@@ -26,30 +27,10 @@ def build_set_rows(scores, max_sets=5):
 
     return set_rows
 
-players = [
-    ["Roger Federer", 0.7078210183876008, 0.2921789816123992, 7.879746835443038, 1.8424753867791843],
-    ["Novak Djokovic", 0.6866990741596312, 0.3133009258403688, 5.679968076616121, 2.3000798084596967],
-    ["Rafael Nadal", 0.6816348848302858, 0.3183651151697143, 3.124398073836276, 1.7006420545746388],
-    ["Andy Murray", 0.656052795718987, 0.34394720428101305, 6.818276220145379, 2.5285565939771546],
-    ["Andy Roddick", 0.7166795708674488, 0.28332042913255123, 11.694695989650711, 2.03751617076326],
-    ["Stan Wawrinka", 0.657445747046252, 0.34255425295374786, 7.305681818181818, 2.5829545454545455],
-    ["Lleyton Hewitt", 0.6488875647158845, 0.35111243528411556, 6.518918918918919, 3.7135135135135133],
-    ["Gilles Simon", 0.6179691234460778, 0.3820308765539223, 4.276023391812865, 2.3005847953216376],
-    ["Marat Safin", 0.657098372152051, 0.3429016278479489, 8.867041198501873, 2.2771535580524342],
-    ["Juan Martin del Potro", 0.6742839547061112, 0.3257160452938888, 7.506734006734007, 2.2962962962962963],
-    ["Marin Cilic", 0.6678561113623648, 0.3321438886376352, 9.428078250863061, 3.0241657077100115],
-    ["Alexander Zverev", 0.672503248397905, 0.327496751602095, 8.390444810543658, 3.647446457990115],
-    ["Grigor Dimitrov", 0.6673108269074414, 0.3326891730925586, 7.090014064697609, 3.4472573839662446],
-    ["David Ferrer", 0.6322201688052386, 0.36777983119476143, 2.71177015755329, 2.602409638554217],
-    ["Nick Kyrgios", 0.6978643227244247, 0.3021356772755753, 15.19732441471572, 3.531772575250836],
-    ["Daniil Medvedev", 0.6650707486594905, 0.3349292513405095, 7.818367346938776, 3.76734693877551],
-    ["Jannik Sinner", 0.6809844943953158, 0.31901550560468417, 6.041935483870968, 2.0516129032258066],
-    ["Frances Tiafoe", 0.6522051575631265, 0.34779484243687353, 7.702412868632708, 2.525469168900804],
-    ["Carlos Alcaraz", 0.6707661480813749, 0.32923385191862514, 3.9655172413793105, 2.21455938697318],
-    ["Ben Shelton", 0.6858442722943544, 0.3141557277056457, 9.991869918699187, 3.886178861788618],
-]
 
 
+
+"""
 
 @app.route('/')
 def index():    
@@ -79,6 +60,7 @@ def run_app():
 
     return render_template('index.html', winner = "None")
 
+"""
 
 def run_tiebreak(a_win_rate, b_win_rate, a_player: str, b_player: str):
     a_points = 0
@@ -99,14 +81,15 @@ def run_tiebreak(a_win_rate, b_win_rate, a_player: str, b_player: str):
         else:
             b_points += 1
         
-        if (a_points >= 6 or b_points >= 6) and abs(a_points - b_points) >= 2:
+        if (a_points >= 7 or b_points >= 7) and abs(a_points - b_points) >= 2:
             if a_points > b_points:
-                return list((a_player, 6, b_points))
+                return list((a_player, 7, b_points))
             else:
-                return list((b_player, a_points, 6))
+                return list((b_player, a_points, 7))
         
         total_points += 1
-        if total_points == 1 or total_points % 2 == 1:
+
+        if total_points >= 1 and total_points % 2 == 1:
             server = 2 if server == 1 else 1
 
 
@@ -127,10 +110,9 @@ def run_game(server_win_rate):
         
 
 
-def run_set(a_win_rate, b_win_rate, a_player: str, b_player: str):
+def run_set(a_win_rate, b_win_rate, a_player: str, b_player: str, server: int):
     a_score = 0
     b_score = 0
-    server = random.randint(1, 2)
 
     while True:
         if server == 1:
@@ -139,28 +121,28 @@ def run_set(a_win_rate, b_win_rate, a_player: str, b_player: str):
 
             if winner == 'server':
                 a_score += 1
-                print(a_score)
+                # print(a_score)
             elif winner == 'return':
                 b_score += 1
-                print(b_score)
+                # print(b_score)
         else: 
             normalized_win_rate = b_win_rate
             winner = run_game(normalized_win_rate)
 
             if winner == 'server':
                 b_score += 1
-                print(b_score)
+                # print(b_score)
             elif winner == 'return':
                 a_score += 1
-                print(a_score)
+                # print(a_score)
             
 
         if (a_score >= 6 or b_score >= 6) and abs(a_score - b_score) >= 2:
             if a_score > b_score:
-                print(f'{a_player} scored: {a_score} and {b_player} scored: {b_score}')
+                # print(f'{a_player} scored: {a_score} and {b_player} scored: {b_score}')
                 return list((a_player, a_score, b_score))
             elif b_score > a_score:
-                print(f'{b_player} scored: {b_score} and {a_player} scored: {a_score}')
+                # print(f'{b_player} scored: {b_score} and {a_player} scored: {a_score}')
                 return list((b_player, a_score, b_score))
             
         if a_score == 6 and b_score == 6:
@@ -173,7 +155,10 @@ def run_set(a_win_rate, b_win_rate, a_player: str, b_player: str):
             server = 1
 
 
-def run_match(a, b):
+with open("player_surface_stats.json", "r") as file:
+    player_stats = json.load(file)
+
+def run_match(a, b, court_type):
     player_a_win = 0
     player_b_win = 0
     player_a_lose = 0
@@ -185,20 +170,22 @@ def run_match(a, b):
     player_a = a
     player_b = b
 
-    for p in players:
-        if player_a.lower() in p[0].lower():
-            player_a_win = p[1]
-            player_b_lose = p[2]
-            a_ace = p[3]
-            a_df = p[4]
+    player_a_stats = player_stats[player_a][court_type]
+    player_b_stats = player_stats[player_b][court_type]
+
+    if player_a_stats["matches"] == 0 or player_b_stats["matches"] == 0:
+        return None
+
+    player_a_win = player_a_stats["serve"] / player_a_stats["matches"]
+    player_b_lose = player_b_stats["return"] / player_a_stats["matches"]
+    a_ace = player_a_stats["aces"] / player_a_stats["matches"]
+    a_df = player_a_stats["df"] / player_a_stats["matches"]
 
 
-    for p in players:
-        if player_b.lower() in p[0].lower():
-            player_b_win = p[1]
-            player_a_lose = p[2]
-            b_ace = p[3]
-            b_df = p[4]
+    player_b_win = player_b_stats["serve"] / player_b_stats["matches"]
+    player_a_lose = player_b_stats["return"] / player_b_stats["matches"]
+    b_ace = player_b_stats["aces"] / player_b_stats["matches"]
+    b_df = player_b_stats["df"] / player_b_stats["matches"]
 
     SCALING_FACTOR = 0.025
 
@@ -217,17 +204,26 @@ def run_match(a, b):
     player_a_adj = SCALING_FACTOR * (ace_effect + df_effect)
     player_b_adj = -player_a_adj 
 
+    total_strength = (player_a_win + player_a_lose + player_b_win + player_b_lose)
+
+    normalized_a_win_rate = (player_a_win + player_a_lose) / total_strength
+
+    normalized_b_win_rate = (player_b_win + player_b_lose) / total_strength
     
-    normalized_a_win_rate = ((player_a_win + player_a_lose) / (player_a_win + player_b_win)) + (player_a_adj)
-    normalized_b_win_rate = ((player_b_win + player_b_lose) / (player_a_win + player_b_win)) + (player_b_adj)
-    print(normalized_a_win_rate)
-    print(normalized_b_win_rate)
+    # normalized_a_win_rate = ((player_a_win + player_a_lose) / (player_a_win + player_b_win)) + (player_a_adj)
+    # normalized_b_win_rate = ((player_b_win + player_b_lose) / (player_a_win + player_b_win)) + (player_b_adj)
+    # print(normalized_a_win_rate)
+    # print(normalized_b_win_rate)
+
+    normalized_a_win_rate = min(max(normalized_a_win_rate,0.05),0.95)
+    normalized_b_win_rate = min(max(normalized_b_win_rate,0.05),0.95)
 
 
     scores = []
 
     while True:
-        winner = run_set(normalized_a_win_rate, normalized_b_win_rate, player_a, player_b)
+        server = 1 if random.random() < 0.5 else 2
+        winner = run_set(normalized_a_win_rate, normalized_b_win_rate, player_a, player_b, server)
         scores.append(winner[1])
         scores.append(winner[2])
 
@@ -250,9 +246,50 @@ def run_match(a, b):
             return list((player_b, player_a, scores))
  
 
+correct_predictions = 0
+incorrect_predictions = 0
+
+data = pd.read_csv("atp_matches_2008.csv", low_memory=False, na_values=[' ', ''])
+
+data.columns = data.columns.str.strip()
+
+data = data[["surface", "winner_name", "loser_name"]].dropna()
+
+player_names = set(player_stats.keys())
+
+
+for row in data.itertuples(index=False):
+    winner = row.winner_name
+    loser = row.loser_name
+    
+    if winner not in player_names or loser not in player_names:
+        continue
+
+    actual_winner_wins = 0
+    actual_loser_wins = 0
+
+    for i in range(25):
+        match = run_match(winner, loser, row.surface)
+
+        if match is None:
+            continue
+
+        if match[0] == winner:
+            actual_winner_wins += 1
+        else:
+            actual_loser_wins += 1
+    
+
+    if actual_winner_wins > actual_loser_wins:
+        correct_predictions += 1
+    else:
+        incorrect_predictions += 1
+
+
+print(correct_predictions)
+print(incorrect_predictions)
 
 
 
-
-if __name__ == '__main__':
-    app.run()
+# if __name__ == '__main__':
+    # app.run()
