@@ -1,192 +1,521 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <link rel="stylesheet" type="text/css" href="/static/index.css"/>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tom Select -->
+  <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
+
+
   <title>TennisLab</title>
 
-  <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
-  <link rel="icon" type="image/png" sizes="32x32" href="/static/tennislablogo.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/static/tennislablogo.png">
-  <link rel="icon" type="image/svg+xml" href="/static/tennislablogosvg.svg">
-  <link rel="apple-touch-icon" href="/static/tennislablogo.png">
-  <link rel="shortcut icon" href="/static/tennislablogo.png">
+  <link rel="icon" type="image/png" href="/static/tennislablogo.png">
 
 </head>
-  <body>
-    <div class="aurora-bg" aria-hidden="true">
-      <span class="aurora-layer aurora-layer-1"></span>
-      <span class="aurora-layer aurora-layer-2"></span>
-      <span class="aurora-layer aurora-layer-3"></span>
-    </div>
 
-    <div class="page-loader" id="page-loader" aria-hidden="true">
-      <div class="loader-orb" aria-hidden="true"></div>
-      <p>Simulating match...</p>
-    </div>
 
-    <div class="page-shell">
-      <div class="title fade-in-up">
-        <p class="eyebrow">Match Intelligence</p>
-        <h1>
-          TennisLab
-        </h1>
-      </div>
+<body>
 
-      <form action="/simulate" method="post" class="match-form fade-in-up" style="animation-delay: 120ms;">
-        <div class="versus">
-          <div class="field-group">
-            <label for="tennis_players_a">Player A</label>
-            <select name="tennis_players_a" id="tennis_players_a">
-              <option value="empty">Select a player</option>
-              <option value="Roger Federer">Roger Federer</option>
-              <option value="Novak Djokovic">Novak Djokovic</option>
-              <option value="Rafael Nadal">Rafael Nadal</option>
-              <option value="Andy Murray">Andy Murray</option>
-              <option value="Andy Roddick">Andy Roddick</option>
-              <option value="Stan Wawrinka">Stan Wawrinka</option>
-              <option value="Lleyton Hewitt">Lleyton Hewitt</option>
-              <option value="Gilles Simon">Gilles Simon</option>
-              <option value="Marat Safin">Marat Safin</option>
-              <option value="Juan Martin del Potro">Juan Martin del Potro</option>
-              <option value="Marin Cilic">Marin Cilic</option>
-              <option value="Alexander Zverev">Alexander Zverev</option>
-              <option value="Grigor Dimitrov">Grigor Dimitrov</option>
-              <option value="David Ferrer">David Ferrer</option>
-              <option value="Nick Kyrgios">Nick Kyrgios</option>
-              <option value="Daniil Medvedev">Daniil Medvedev</option>
-              <option value="Jannik Sinner">Jannik Sinner</option>
-              <option value="Frances Tiafoe">Frances Tiafoe</option>
-              <option value="Carlos Alcaraz">Carlos Alcaraz</option>
-              <option value="Ben Shelton">Ben Shelton</option>
-            </select>
-          </div>
 
-          <h1 class="vs-badge">VS</h1>
+<div class="aurora-bg" aria-hidden="true">
+  <span class="aurora-layer aurora-layer-1"></span>
+  <span class="aurora-layer aurora-layer-2"></span>
+  <span class="aurora-layer aurora-layer-3"></span>
+</div>
 
-          <div class="field-group">
-            <label for="tennis_players_b">Player B</label>
-            <select name="tennis_players_b" id="tennis_players_b">
-              <option value="empty">Select a player</option>
-              <option value="Roger Federer">Roger Federer</option>
-              <option value="Novak Djokovic">Novak Djokovic</option>
-              <option value="Rafael Nadal">Rafael Nadal</option>
-              <option value="Andy Murray">Andy Murray</option>
-              <option value="Andy Roddick">Andy Roddick</option>
-              <option value="Stan Wawrinka">Stan Wawrinka</option>
-              <option value="Lleyton Hewitt">Lleyton Hewitt</option>
-              <option value="Gilles Simon">Gilles Simon</option>
-              <option value="Marat Safin">Marat Safin</option>
-              <option value="Juan Martin del Potro">Juan Martin del Potro</option>
-              <option value="Marin Cilic">Marin Cilic</option>
-              <option value="Alexander Zverev">Alexander Zverev</option>
-              <option value="Grigor Dimitrov">Grigor Dimitrov</option>
-              <option value="David Ferrer">David Ferrer</option>
-              <option value="Nick Kyrgios">Nick Kyrgios</option>
-              <option value="Daniil Medvedev">Daniil Medvedev</option>
-              <option value="Jannik Sinner">Jannik Sinner</option>
-              <option value="Frances Tiafoe">Frances Tiafoe</option>
-              <option value="Carlos Alcaraz">Carlos Alcaraz</option>
-              <option value="Ben Shelton">Ben Shelton</option>
-            </select>
-          </div>
-        </div>
-        <button type="submit">
-          <span class="button-spinner" aria-hidden="true"></span>
-          <span class="button-label">Simulate Match</span>
-        </button>
-      </form>
 
-      <h2 class="winner-title fade-in-up" style="animation-delay: 220ms;">
-        <span class="winner-icon" aria-hidden="true">🏆</span>
-        Winner: <span>{{ winner }}</span>
-      </h2>
 
-      <div class="scoreboard fade-in-up" style="animation-delay: 300ms;">
-        <div class="header">Centre Court</div>
-        <div class="subheader">Gentlemen's Singles</div>
+<div class="page-loader" id="page-loader" aria-hidden="true">
+  <div class="loader-orb"></div>
+  <p>Simulating match...</p>
+</div>
 
-        <div class="player {% if winner == player_a %} winner {% endif %}">
-          <div class="info">
-            <div class="name">{{ player_a }}</div>
-          </div>
-          <div class="sets">
-            {% for set_row in set_rows %}
-              <div class="set-cell {% if not set_row.played %}empty-set{% endif %}" data-played="{{ 1 if set_row.played else 0 }}">{{ set_row.a if set_row.played else "—" }}</div>
-            {% endfor %}
-          </div>
-        </div>
 
-        <div class="player {% if winner == player_b %} winner {% endif %}">
-          <div class="info">
-            <div class="name">{{ player_b }}</div>
-          </div>
-          <div class="sets">
-            {% for set_row in set_rows %}
-              <div class="set-cell {% if not set_row.played %}empty-set{% endif %}" data-played="{{ 1 if set_row.played else 0 }}">{{ set_row.b if set_row.played else "—" }}</div>
-            {% endfor %}
-          </div>
-        </div>
-      </div>
-    </div>
 
-    <script>
-      function animateMatch() {
-        const players = document.querySelectorAll(".player");
-        if (players.length < 2) return;
+<div class="page-shell">
 
-        const setsAContainer = players[0].querySelector(".sets");
-        const setsBContainer = players[1].querySelector(".sets");
-        if (!setsAContainer || !setsBContainer) return;
 
-        setsAContainer.classList.add("is-animating");
-        setsBContainer.classList.add("is-animating");
+<div class="title fade-in-up">
 
-        const playerA = setsAContainer.querySelectorAll("div");
-        const playerB = setsBContainer.querySelectorAll("div");
-        let revealIndex = 0;
+  <p class="eyebrow">
+    Match Intelligence
+  </p>
 
-        playerA.forEach((scoreA, i) => {
-          const scoreB = playerB[i];
-          if (!scoreA || !scoreB) return;
-          if (scoreA.dataset.played !== "1" || scoreB.dataset.played !== "1") return;
+  <h1>
+    TennisLab
+  </h1>
 
-          setTimeout(() => {
-            scoreA.classList.add("show");
-            scoreB.classList.add("show");
+</div>
 
-            const valA = parseInt(scoreA.innerText) || 0;
-            const valB = parseInt(scoreB.innerText) || 0;
 
-            if (valA > valB) {
-              scoreA.classList.add("winner-set");
-              scoreB.classList.remove("winner-set");
-            } else if (valB > valA) {
-              scoreB.classList.add("winner-set");
-              scoreA.classList.remove("winner-set");
-            } else {
-              scoreA.classList.remove("winner-set");
-              scoreB.classList.remove("winner-set");
-            }
-          }, revealIndex * 700);
-          revealIndex += 1;
-        });
 
-        setTimeout(() => {
-          const finalWinner = document.querySelector(".player.winner");
-          if (finalWinner) {
-            finalWinner.classList.add("final-highlight");
-          }
-        }, revealIndex * 700 + 120);
-      }
 
-      window.onload = animateMatch;
-    </script>
-    <script src="/static/ui.js"></script>
-    
-  </body>
+<form action="/simulate" method="post" class="match-form fade-in-up" style="animation-delay:120ms;">
+
+
+<div class="versus">
+
+
+<!-- PLAYER A -->
+
+<div class="field-group">
+
+<label for="tennis_players_a">
+Player A
+</label>
+
+
+<select 
+id="tennis_players_a"
+name="tennis_players_a"
+required
+>
+
+<option value="">
+Search player...
+</option>
+
+
+{% for player in players %}
+<option value="{{ player }}"
+{% if player == player_a %}selected{% endif %}
+>
+{{ player }}
+</option>
+{% endfor %}
+
+
+</select>
+
+
+</div>
+
+
+
+<h1 class="vs-badge">
+VS
+</h1>
+
+
+
+
+<!-- PLAYER B -->
+
+<div class="field-group">
+
+<label for="tennis_players_b">
+Player B
+</label>
+
+
+<select 
+id="tennis_players_b"
+name="tennis_players_b"
+required
+>
+
+<option value="">
+Search player...
+</option>
+
+
+{% for player in players %}
+<option value="{{ player }}"
+{% if player == player_b %}selected{% endif %}
+>
+{{ player }}
+</option>
+{% endfor %}
+
+
+</select>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+<!-- COURT SURFACE -->
+
+<div class="field-group court-group">
+
+
+<label for="court_type">
+Court Surface
+</label>
+
+
+<select 
+id="court_type"
+name="court_type"
+required
+>
+
+
+<option value="">
+Select surface...
+</option>
+
+
+<option value="Hard"
+{% if court_type == "Hard" %}selected{% endif %}
+>
+Hard
+</option>
+
+
+<option value="Clay"
+{% if court_type == "Clay" %}selected{% endif %}
+>
+Clay
+</option>
+
+
+<option value="Grass"
+{% if court_type == "Grass" %}selected{% endif %}
+>
+Grass
+</option>
+
+
+<option value="Carpet"
+{% if court_type == "Carpet" %}selected{% endif %}
+>
+Carpet
+</option>
+
+
+</select>
+
+
+</div>
+
+
+
+
+<button type="submit">
+
+<span class="button-spinner"></span>
+
+<span class="button-label">
+Simulate Match
+</span>
+
+</button>
+
+
+
+</form>
+
+
+
+
+
+
+<h2 class="winner-title fade-in-up" style="animation-delay:220ms;">
+
+<span class="winner-icon">
+🏆
+</span>
+
+Winner:
+
+<span>
+{{ winner }}
+</span>
+
+</h2>
+
+
+
+
+
+
+
+<div class="scoreboard fade-in-up" style="animation-delay:300ms;">
+
+
+<div class="header">
+Centre Court
+</div>
+
+
+<div class="subheader">
+Gentlemen's Singles
+</div>
+
+
+
+
+
+<div class="player {% if winner == player_a %}winner{% endif %}">
+
+
+<div class="info">
+
+<div class="name">
+{{ player_a }}
+</div>
+
+</div>
+
+
+
+<div class="sets">
+
+{% for set_row in set_rows %}
+
+<div 
+class="set-cell {% if not set_row.played %}empty-set{% endif %}"
+data-played="{{1 if set_row.played else 0}}"
+>
+
+{{ set_row.a if set_row.played else "—" }}
+
+</div>
+
+{% endfor %}
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+<div class="player {% if winner == player_b %}winner{% endif %}">
+
+
+<div class="info">
+
+<div class="name">
+{{ player_b }}
+</div>
+
+</div>
+
+
+
+<div class="sets">
+
+{% for set_row in set_rows %}
+
+<div 
+class="set-cell {% if not set_row.played %}empty-set{% endif %}"
+data-played="{{1 if set_row.played else 0}}"
+>
+
+{{ set_row.b if set_row.played else "—" }}
+
+</div>
+
+{% endfor %}
+
+</div>
+
+
+</div>
+
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+
+<!-- Tom Select -->
+
+<script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+
+
+<script>
+
+
+new TomSelect("#tennis_players_a", {
+
+create:false,
+
+maxOptions:100,
+
+placeholder:"Search player...",
+
+sortField:{
+field:"text",
+direction:"asc"
+}
+
+});
+
+
+
+new TomSelect("#tennis_players_b", {
+
+create:false,
+
+maxOptions:100,
+
+placeholder:"Search player...",
+
+sortField:{
+field:"text",
+direction:"asc"
+}
+
+});
+
+
+
+new TomSelect("#court_type", {
+
+create:false,
+
+placeholder:"Select surface..."
+
+});
+
+
+
+</script>
+
+
+
+
+
+<script>
+function animateMatch() {
+
+const players = document.querySelectorAll(".player");
+
+if(players.length < 2) return;
+
+
+const setsAContainer = players[0].querySelector(".sets");
+const setsBContainer = players[1].querySelector(".sets");
+
+
+if(!setsAContainer || !setsBContainer)
+return;
+
+
+
+setsAContainer.classList.add("is-animating");
+setsBContainer.classList.add("is-animating");
+
+
+
+const playerA = setsAContainer.querySelectorAll("div");
+const playerB = setsBContainer.querySelectorAll("div");
+
+
+let revealIndex = 0;
+
+
+
+playerA.forEach((scoreA,i)=>{
+
+
+const scoreB = playerB[i];
+
+
+if(!scoreA || !scoreB)
+return;
+
+
+if(scoreA.dataset.played !== "1")
+return;
+
+
+
+setTimeout(()=>{
+
+
+scoreA.classList.add("show");
+scoreB.classList.add("show");
+
+
+const valA=parseInt(scoreA.innerText)||0;
+const valB=parseInt(scoreB.innerText)||0;
+
+
+
+if(valA>valB){
+
+scoreA.classList.add("winner-set");
+scoreB.classList.remove("winner-set");
+
+}
+
+else if(valB>valA){
+
+scoreB.classList.add("winner-set");
+scoreA.classList.remove("winner-set");
+
+}
+
+
+},revealIndex*700);
+
+
+revealIndex++;
+
+
+});
+
+
+
+setTimeout(()=>{
+
+const finalWinner=document.querySelector(".player.winner");
+
+if(finalWinner){
+
+finalWinner.classList.add("final-highlight");
+
+}
+
+
+},revealIndex*700+120);
+
+
+
+}
+
+
+
+window.onload=animateMatch;
+
+</script>
+
+
+
+<script src="/static/ui.js"></script>
+
+
+
+</body>
+
 </html>

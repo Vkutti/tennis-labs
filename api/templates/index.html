@@ -1,12 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <link rel="stylesheet" type="text/css" href="/static/index.css"/>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tom Select -->
+  <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
+
   <title>TennisLab</title>
 
   <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
@@ -14,95 +21,291 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/static/tennislablogo.png">
   <link rel="icon" type="image/svg+xml" href="/static/tennislablogosvg.svg">
   <link rel="apple-touch-icon" href="/static/tennislablogo.png">
-  <link rel="shortcut icon" href="/static/tennislablogo.png">
 
 </head>
-  <body>
-    <div class="aurora-bg" aria-hidden="true">
-      <span class="aurora-layer aurora-layer-1"></span>
-      <span class="aurora-layer aurora-layer-2"></span>
-      <span class="aurora-layer aurora-layer-3"></span>
+
+
+<body>
+
+
+<div class="aurora-bg" aria-hidden="true">
+  <span class="aurora-layer aurora-layer-1"></span>
+  <span class="aurora-layer aurora-layer-2"></span>
+  <span class="aurora-layer aurora-layer-3"></span>
+</div>
+
+
+
+<div class="page-loader" id="page-loader" aria-hidden="true">
+
+  <div class="loader-orb" aria-hidden="true"></div>
+
+  <p>
+    Simulating match...
+  </p>
+
+</div>
+
+
+
+
+<div class="page-shell page-shell--home">
+
+
+  <div class="title fade-in-up">
+
+    <p class="eyebrow">
+      Match Intelligence
+    </p>
+
+
+    <h1>
+      TennisLab
+    </h1>
+
+
+    <p class="subtitle">
+      Simulate iconic matchups and discover who wins over five sets.
+    </p>
+
+  </div>
+
+
+
+
+
+<form action="/simulate" method="post" class="match-form fade-in-up" style="animation-delay:120ms;">
+
+
+
+<div class="versus">
+
+
+    <!-- PLAYER A -->
+
+    <div class="field-group">
+
+        <label for="tennis_players_a">
+            Player A
+        </label>
+
+
+        <select 
+            name="tennis_players_a"
+            id="tennis_players_a"
+            required
+        >
+
+            <option value="">
+                Search player...
+            </option>
+
+
+            {% for player in players %}
+
+                <option value="{{ player }}">
+                    {{ player }}
+                </option>
+
+            {% endfor %}
+
+
+        </select>
+
+
     </div>
 
-    <div class="page-loader" id="page-loader" aria-hidden="true">
-      <div class="loader-orb" aria-hidden="true"></div>
-      <p>Simulating match...</p>
+
+
+
+    <h1 class="vs-badge">
+        VS
+    </h1>
+
+
+
+
+    <!-- PLAYER B -->
+
+    <div class="field-group">
+
+        <label for="tennis_players_b">
+            Player B
+        </label>
+
+
+        <select 
+            name="tennis_players_b"
+            id="tennis_players_b"
+            required
+        >
+
+            <option value="">
+                Search player...
+            </option>
+
+
+            {% for player in players %}
+
+                <option value="{{ player }}">
+                    {{ player }}
+                </option>
+
+            {% endfor %}
+
+
+        </select>
+
+
     </div>
 
-    <div class="page-shell page-shell--home">
-      <div class="title fade-in-up">
-        <p class="eyebrow">Match Intelligence</p>
-        <h1>
-          TennisLab
-        </h1>
-        <p class="subtitle">Simulate iconic matchups and discover who wins over five sets.</p>
-      </div>
 
-      <form action="/simulate" method="post" class="match-form fade-in-up" style="animation-delay: 120ms;">
-        <div class="versus">
-          <div class="field-group">
-            <label for="tennis_players_a">Player A</label>
-            <select name="tennis_players_a" id="tennis_players_a">
-              <option value="empty">Select a player</option>
-              <option value="Roger Federer">Roger Federer</option>
-              <option value="Novak Djokovic">Novak Djokovic</option>
-              <option value="Rafael Nadal">Rafael Nadal</option>
-              <option value="Andy Murray">Andy Murray</option>
-              <option value="Andy Roddick">Andy Roddick</option>
-              <option value="Stan Wawrinka">Stan Wawrinka</option>
-              <option value="Lleyton Hewitt">Lleyton Hewitt</option>
-              <option value="Gilles Simon">Gilles Simon</option>
-              <option value="Marat Safin">Marat Safin</option>
-              <option value="Juan Martin del Potro">Juan Martin del Potro</option>
-              <option value="Marin Cilic">Marin Cilic</option>
-              <option value="Alexander Zverev">Alexander Zverev</option>
-              <option value="Grigor Dimitrov">Grigor Dimitrov</option>
-              <option value="David Ferrer">David Ferrer</option>
-              <option value="Nick Kyrgios">Nick Kyrgios</option>
-              <option value="Daniil Medvedev">Daniil Medvedev</option>
-              <option value="Jannik Sinner">Jannik Sinner</option>
-              <option value="Frances Tiafoe">Frances Tiafoe</option>
-              <option value="Carlos Alcaraz">Carlos Alcaraz</option>
-              <option value="Ben Shelton">Ben Shelton</option>
-            </select>
-          </div>
+</div>
 
-          <h1 class="vs-badge">VS</h1>
 
-          <div class="field-group">
-            <label for="tennis_players_b">Player B</label>
-            <select name="tennis_players_b" id="tennis_players_b">
-              <option value="empty">Select a player</option>
-              <option value="Roger Federer">Roger Federer</option>
-              <option value="Novak Djokovic">Novak Djokovic</option>
-              <option value="Rafael Nadal">Rafael Nadal</option>
-              <option value="Andy Murray">Andy Murray</option>
-              <option value="Andy Roddick">Andy Roddick</option>
-              <option value="Stan Wawrinka">Stan Wawrinka</option>
-              <option value="Lleyton Hewitt">Lleyton Hewitt</option>
-              <option value="Gilles Simon">Gilles Simon</option>
-              <option value="Marat Safin">Marat Safin</option>
-              <option value="Juan Martin del Potro">Juan Martin del Potro</option>
-              <option value="Marin Cilic">Marin Cilic</option>
-              <option value="Alexander Zverev">Alexander Zverev</option>
-              <option value="Grigor Dimitrov">Grigor Dimitrov</option>
-              <option value="David Ferrer">David Ferrer</option>
-              <option value="Nick Kyrgios">Nick Kyrgios</option>
-              <option value="Daniil Medvedev">Daniil Medvedev</option>
-              <option value="Jannik Sinner">Jannik Sinner</option>
-              <option value="Frances Tiafoe">Frances Tiafoe</option>
-              <option value="Carlos Alcaraz">Carlos Alcaraz</option>
-              <option value="Ben Shelton">Ben Shelton</option>
-            </select>
-          </div>
-        </div>
 
-        <button type="submit">
-          <span class="button-spinner" aria-hidden="true"></span>
-          <span class="button-label">Simulate Match</span>
-        </button>
-      </form>
-    </div>
-    <script src="/static/ui.js"></script>
-  </body>
+
+
+<!-- COURT TYPE -->
+
+<div class="field-group court-group">
+
+
+    <label for="court_type">
+        Court Surface
+    </label>
+
+
+    <select
+        name="court_type"
+        id="court_type"
+        required
+    >
+
+        <option value="">
+            Select surface...
+        </option>
+
+
+        <option value="Hard">
+            Hard
+        </option>
+
+
+        <option value="Clay">
+            Clay
+        </option>
+
+
+        <option value="Grass">
+            Grass
+        </option>
+
+
+        <option value="Carpet">
+            Carpet
+        </option>
+
+
+    </select>
+
+
+</div>
+
+
+
+
+
+
+<button type="submit">
+
+    <span class="button-spinner" aria-hidden="true"></span>
+
+    <span class="button-label">
+        Simulate Match
+    </span>
+
+</button>
+
+
+
+
+</form>
+
+
+
+</div>
+
+
+
+
+
+<!-- Tom Select JS -->
+
+<script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+
+
+
+
+<script>
+
+
+new TomSelect("#tennis_players_a", {
+
+    create: false,
+
+    maxOptions: 100,
+
+    placeholder: "Search player...",
+
+    sortField: {
+        field: "text",
+        direction: "asc"
+    }
+
+});
+
+
+
+
+
+new TomSelect("#tennis_players_b", {
+
+    create: false,
+
+    maxOptions: 100,
+
+    placeholder: "Search player...",
+
+    sortField: {
+        field: "text",
+        direction: "asc"
+    }
+
+});
+
+
+
+
+
+new TomSelect("#court_type", {
+
+    create: false,
+
+    placeholder: "Select surface..."
+
+});
+
+
+
+</script>
+
+
+
+
+<script src="/static/ui.js"></script>
+
+
+</body>
+
 </html>

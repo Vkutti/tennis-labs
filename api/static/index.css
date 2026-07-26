@@ -73,6 +73,203 @@ body.transition-enabled.is-leaving {
   font-weight: 700;
 }
 
+/* ============================= */
+/* TOM SELECT TENNISLAB STYLING */
+/* ============================= */
+
+
+/* Container */
+.ts-wrapper {
+  width: 100%;
+  font-family: "Inter", Arial, sans-serif;
+}
+
+
+/* Main input box */
+.ts-control {
+  width: 100%;
+
+  padding: 12px 14px !important;
+
+  border-radius: 12px !important;
+
+  border: 1px solid var(--border) !important;
+
+  background: var(--surface-2) !important;
+
+  color: var(--text) !important;
+
+  font-size: 0.95rem;
+
+  box-shadow: none !important;
+
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+
+/* Hover */
+.ts-control:hover {
+  border-color: rgba(34,197,94,0.35) !important;
+}
+
+
+/* Focus */
+.ts-wrapper.focus .ts-control {
+
+  border-color: var(--accent) !important;
+
+  box-shadow:
+    0 0 0 3px rgba(34,197,94,0.25) !important;
+
+  transform: translateY(-1px);
+
+}
+
+
+
+/* Selected player text */
+.ts-control .item {
+
+  color: var(--text) !important;
+
+  font-weight: 500;
+
+}
+
+
+
+/* Search text while typing */
+.ts-control input {
+
+  color: var(--text) !important;
+
+  font-family: "Inter", Arial, sans-serif;
+
+}
+
+
+.ts-control input::placeholder {
+
+  color: var(--muted);
+
+}
+
+
+
+/* Dropdown menu */
+
+.ts-dropdown {
+
+  margin-top: 6px !important;
+
+  border-radius: 14px !important;
+
+  border: 1px solid var(--border) !important;
+
+  background: var(--surface) !important;
+
+  box-shadow: var(--shadow);
+
+  overflow: hidden;
+
+}
+
+
+
+/* Dropdown options */
+
+.ts-dropdown .option {
+
+  padding: 12px 14px;
+
+  color: var(--text);
+
+  font-size: 0.95rem;
+
+}
+
+
+
+/* Hover option */
+
+.ts-dropdown .active {
+
+  background:
+    rgba(34,197,94,0.18) !important;
+
+  color: white !important;
+
+}
+
+
+
+/* Selected option */
+
+.ts-dropdown .selected {
+
+  background:
+    rgba(34,197,94,0.25) !important;
+
+}
+
+
+
+/* Dropdown scrollbar */
+
+.ts-dropdown-content::-webkit-scrollbar {
+
+  width: 8px;
+
+}
+
+
+.ts-dropdown-content::-webkit-scrollbar-thumb {
+
+  background: rgba(255,255,255,0.15);
+
+  border-radius: 10px;
+
+}
+
+
+/* Court selector spacing */
+
+.court-group {
+
+  width: 100%;
+
+  margin-top: 4px;
+
+}
+
+
+
+/* Make all selectors same height */
+
+.ts-control,
+select {
+
+  min-height: 46px;
+
+}
+
+
+
+/* Mobile adjustments */
+
+@media (max-width: 780px) {
+
+  .ts-control {
+
+    padding: 12px !important;
+
+  }
+
+}
+
 .title h1 {
   margin: 0;
   font-size: clamp(2rem, 7vw, 3.2rem);
