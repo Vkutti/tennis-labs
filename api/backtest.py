@@ -373,7 +373,7 @@ def calculate_elo(player_a, player_b, court_type):
 
     return expected_a, expected_b
 
-def run_match(a, b, court_type):
+def run_match(a, b, court_type, stat_mult, elo_mult):
     player_a_win = 0
     player_b_win = 0
     player_a_lose = 0
@@ -404,7 +404,7 @@ def run_match(a, b, court_type):
     b_ace = player_b_stats["aces"] / player_b_stats["matches"]
     b_df = player_b_stats["df"] / player_b_stats["matches"]
 
-    SCALING_FACTOR = 0.025
+    SCALING_FACTOR = 0.01
 
     a_ace_adv = (a_ace - b_ace)
     a_df_adv  = (a_df - b_df)
@@ -425,9 +425,9 @@ def run_match(a, b, court_type):
 
     expected_a_prob, expected_b_prob = calculate_elo(player_a, player_b, court_type)
 
-    normalized_a_win_rate = (0.4 * ((player_a_win + player_a_lose) / total_strength) + player_a_adj) + (0.6 * expected_a_prob)
+    normalized_a_win_rate = (stat_mult * ((player_a_win + player_a_lose) / total_strength) + player_a_adj) + (elo_mult * expected_a_prob)
 
-    normalized_b_win_rate = (0.4 * ((player_b_win + player_b_lose) / total_strength) + player_b_adj) + (0.6 * (expected_b_prob))
+    normalized_b_win_rate = (stat_mult * ((player_b_win + player_b_lose) / total_strength) + player_b_adj) + (elo_mult * (expected_b_prob))
 
     # normalized_a_win_rate = ((player_a_win + player_a_lose) / (player_a_win + player_b_win)) + (player_a_adj)
     # normalized_b_win_rate = ((player_b_win + player_b_lose) / (player_a_win + player_b_win)) + (player_b_adj)
@@ -475,9 +475,6 @@ def run_monte_carlo_simulation(iterations):
 
     # data = data[["surface", "winner_name", "loser_name"]].dropna()
 
-    
-
-
     for row in data.itertuples(index=False):
         winner = row.winner_name
         loser = row.loser_name
@@ -489,7 +486,7 @@ def run_monte_carlo_simulation(iterations):
         actual_loser_wins = 0
 
         for i in range(iterations):
-            match = run_match(winner, loser, row.surface)
+            match = run_match(winner, loser, row.surface, 0.4, 0.6)
 
             if match is None:
                 continue
