@@ -1,14 +1,8 @@
 import numpy as np
 import pandas as pd
 import math
-from flask import Flask, render_template, request, redirect, url_for
 import random
 import json
-
-app = Flask(__name__, static_folder='static')
-app.config["TEMPLATES_AUTO_RELOAD"] = True
-app.jinja_env.auto_reload = True
-
 
 players = ['Tommy Haas', 'Juan Balcells', 'Alberto Martin', 'Juan Carlos Ferrero', 'Michael Chang', 'Magnus Gustafsson', 'Thomas Johansson', 'Sjeng Schalken', 'Tomas Behrend',
             'Gaston Gaudio', 'Jiri Novak', 'Marc Rosset', 'John Van Lottum', 'Jan Michael Gambill', 'Magnus Norman', 'Andrea Gaudenzi', 'Albert Portas', 'Galo Blanco', 
@@ -105,39 +99,6 @@ def build_set_rows(scores, max_sets=5):
     return set_rows
 
 
-
-@app.route('/')
-def index():    
-    return render_template('index.html', winner = "", players=players)
-
-
-@app.route('/simulate', methods=['POST'])
-def run_app():
-    if request.method == 'POST':
-        player_a = request.form.get('tennis_players_a')
-        player_b = request.form.get('tennis_players_b')
-        court_type = request.form.get('court_type')
-
-        if player_a == "empty" or player_b == "empty":
-            return render_template('index.html', winner = "None")
-        else:
-            match = run_match(player_a, player_b, court_type)
-            scores = match[2]
-            set_rows = build_set_rows(scores)
-
-            return render_template(
-                'results.html',
-                winner=match[0],
-                players=players,
-                player_a=player_a,
-                player_b=player_b,
-                set_rows=set_rows,
-            )
-
-    return render_template('index.html', winner = "None")
-
-
-
 def run_tiebreak(a_win_rate, b_win_rate, a_player: str, b_player: str):
     a_points = 0
     b_points = 0
@@ -230,12 +191,170 @@ def run_set(a_win_rate, b_win_rate, a_player: str, b_player: str, server: int):
         elif server == 2:
             server = 1
 
+court_types = ['Hard', 'Clay', 'Grass', 'Carpet']
 
-with open("player_surface_stats.json", "r") as file:
-    player_stats = json.load(file)
+player_stats = {
+    p: {
+        surface: {
+            "serve": 0,
+            "return": 0,
+            "aces": 0,
+            "df": 0,
+            "matches": 0,
+        }
+        for surface in court_types
+    }
+    for p in players
+}
 
-with open("player_surface_elo.json", "r") as file:
-    player_elo = json.load(file)
+def build_stats(row):
+    w_all_data = []
+    l_all_data = []
+
+
+    winner = str(row.winner_name).strip()
+    loser = str(row.loser_name).strip()
+    court_surface = str(row.surface)
+
+    if court_surface not in court_types:
+        return
+
+    try:
+        w_serve_to_points = float(row.w_svpt)
+        w_first_serves = float(row.w_1stWon)
+        w_second_serves = float(row.w_2ndWon)
+        w_aces = float(row.w_ace)
+        w_df = float(row.w_df)
+
+        if w_serve_to_points > 0:
+
+            w_serves_to_points = (w_first_serves + w_second_serves) / w_serve_to_points
+
+            l_return_accuracy = (w_serve_to_points - (w_first_serves + w_second_serves)) / w_serve_to_points
+
+            w_all_data.append([
+                winner,
+                court_surface,
+                w_serves_to_points,
+                l_return_accuracy,
+                w_aces,
+                w_df,
+                1
+            ])
+
+    except (ValueError, TypeError):
+        return
+
+
+    try:
+        l_serve_to_points = float(row.l_svpt)
+        l_first_serves = float(row.l_1stWon)
+        l_second_serves = float(row.l_2ndWon)
+        l_aces = float(row.l_ace)
+        l_df = float(row.l_df)
+
+        if l_serve_to_points > 0:
+
+            l_serves_to_points = (l_first_serves + l_second_serves) / l_serve_to_points
+
+            w_return_accuracy = (l_serve_to_points - (l_first_serves + l_second_serves)) / l_serve_to_points
+
+
+            l_all_data.append([
+                loser,
+                court_surface,
+                l_serves_to_points,
+                w_return_accuracy,
+                l_aces,
+                l_df,
+                1
+            ])
+
+    except (ValueError, TypeError):
+        return
+
+    total_all_data = w_all_data + l_all_data
+
+    for i in total_all_data:
+
+        player = i[0]
+        surface = i[1]
+        serve_value = i[2]
+        return_value = i[3]
+        aces = i[4]
+        df = i[5]
+        matches = i[6]
+
+
+        if (
+            player in player_stats 
+            and surface in court_types
+            and not math.isnan(serve_value)
+            and not math.isnan(return_value)
+        ):
+
+            player_stats[player][surface]["serve"] += serve_value
+            player_stats[player][surface]["return"] += return_value
+            player_stats[player][surface]["aces"] += aces
+            player_stats[player][surface]["df"] += df
+            player_stats[player][surface]["matches"] += matches
+    
+    # print(total_all_data_dict)
+
+player_elo = {}
+
+data = (
+        pd.read_csv("atp_matches_2008.csv")
+        .drop_duplicates()
+        .sort_values("tourney_date")
+    )
+
+
+def new_player():
+    return {
+        "Hard": [1500],
+        "Grass": [1500],
+        "Clay": [1500],
+        "Carpet": [1500],
+    }
+
+for row in data.itertuples(index=False):
+    if row.winner_name not in player_elo:
+        player_elo[row.winner_name] = new_player()
+    if row.loser_name not in player_elo:
+        player_elo[row.loser_name] = new_player()
+
+def build_elo(row):
+    K_multiplier = 40
+
+    predictions = []
+    losses = []
+
+    court_type = row.surface
+    winner_rating = player_elo[row.winner_name][court_type][-1]
+    loser_rating = player_elo[row.loser_name][court_type][-1]
+
+    expected_a = (1 / (1 + (10 ** (((loser_rating) - (winner_rating)) / 400))))   
+    expected_b = 1 - expected_a
+
+    
+    if expected_a >= 0.5:
+        predictions.append(1)
+    else:
+        predictions.append(0)
+
+    loss = -np.log(expected_a)
+    losses.append(loss)
+
+    # print(expected_a + expected_b)
+
+    result_a = winner_rating + (K_multiplier * (1 - expected_a))
+    result_b = loser_rating + (K_multiplier * (0 - expected_b))
+
+    # print(result_a, result_b)
+
+    player_elo[row.winner_name][court_type].append((result_a))
+    player_elo[row.loser_name][court_type].append((result_b))
 
 losses = []
 
@@ -265,6 +384,8 @@ def run_match(a, b, court_type):
 
     player_a = a
     player_b = b
+
+
 
     player_a_stats = player_stats[player_a][court_type]
     player_b_stats = player_stats[player_b][court_type]
@@ -334,7 +455,7 @@ def run_match(a, b, court_type):
             # print(f'Winner of the match is {player_a}')
             # print(f'{player_a}: {player_a_set_score}')
             # print(f'{player_b}: {player_b_set_score}')
-             #print(list((player_a, player_b, scores)))
+            # print(list((player_a, player_b, scores)))
             return list((player_a, player_b, scores))
         elif player_b_set_score >= 3:
             # print(f'Winner of the match is {player_b}')
@@ -344,17 +465,17 @@ def run_match(a, b, court_type):
             return list((player_b, player_a, scores))
  
 
+player_names = set(players)
+
 def run_monte_carlo_simulation(iterations):
     correct_predictions = 0
     incorrect_predictions = 0
 
-    data = pd.read_csv("atp_matches_2008.csv", low_memory=False, na_values=[' ', ''])
-
     data.columns = data.columns.str.strip()
 
-    data = data[["surface", "winner_name", "loser_name"]].dropna()
+    # data = data[["surface", "winner_name", "loser_name"]].dropna()
 
-    player_names = set(player_stats.keys())
+    
 
 
     for row in data.itertuples(index=False):
@@ -377,12 +498,15 @@ def run_monte_carlo_simulation(iterations):
                 actual_winner_wins += 1
             else:
                 actual_loser_wins += 1
-        
+
 
         if actual_winner_wins > actual_loser_wins:
             correct_predictions += 1
         else:
             incorrect_predictions += 1
+
+        build_stats(row)
+        build_elo(row)
 
 
     print(correct_predictions)
@@ -394,6 +518,3 @@ run_monte_carlo_simulation(51)
 
 print(np.mean(losses))
 
-
-# if __name__ == '__main__':
-    # app.run()
