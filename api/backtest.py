@@ -2,7 +2,9 @@ import numpy as np
 import pandas as pd
 import math
 import random
-import json
+
+from sklearn.isotonic import IsotonicRegression
+from sklearn.model_selection import train_test_split
 
 players = ['Tommy Haas', 'Juan Balcells', 'Alberto Martin', 'Juan Carlos Ferrero', 'Michael Chang', 'Magnus Gustafsson', 'Thomas Johansson', 'Sjeng Schalken', 'Tomas Behrend',
             'Gaston Gaudio', 'Jiri Novak', 'Marc Rosset', 'John Van Lottum', 'Jan Michael Gambill', 'Magnus Norman', 'Andrea Gaudenzi', 'Albert Portas', 'Galo Blanco', 
@@ -108,7 +110,6 @@ def run_tiebreak(a_win_rate, b_win_rate, a_player: str, b_player: str, server):
             server = 2 if server == 1 else 1
 
 
-
 def run_game(server_win_rate):
     server_points, return_points = 0, 0
     
@@ -123,7 +124,6 @@ def run_game(server_win_rate):
                 return 'server' if server_points > return_points else 'return'
 
         
-
 
 def run_set(a_win_rate, b_win_rate, a_player: str, b_player: str, server: int):
     a_score = 0
@@ -226,7 +226,10 @@ def build_stats(row):
 
 player_elo = {}
 
-data = (pd.read_csv("atp_matches_2008.csv").drop_duplicates().sort_values("tourney_date"))
+data = (pd.read_csv("atp_matches_2008.csv").drop_duplicates())
+round_order = {'R128':0,'R64':1,'R32':2,'R16':3,'QF':4,'SF':5,'F':6,'RR':0,'BR':5}
+data = data.assign(_round_rank=data['round'].map(round_order).fillna(0))
+data = data.sort_values(['tourney_date', '_round_rank'])
 
 
 def new_player():
@@ -244,11 +247,23 @@ for row in data.itertuples(index=False):
         player_elo[row.loser_name] = new_player()
 
 def build_elo(row):
-    K_multiplier = 40
-
     predictions = []
 
-    court_type = row.surface
+    court_type = row.surface 
+
+    winner_matches = 1
+    loser_matches = 1
+
+    if player_stats[row.winner_name][court_type]["matches"] != 0:
+        winner_matches = player_stats[row.winner_name][court_type]["matches"]
+    
+    if player_stats[row.loser_name][court_type]["matches"] != 0:
+        loser_matches = player_stats[row.loser_name][court_type]["matches"]
+        
+
+    K_multiplier_winner = max(32, 256 / np.sqrt(winner_matches + 1))
+    K_multiplier_loser = max(32, 256 / np.sqrt(loser_matches + 1))
+
     winner_rating = player_elo[row.winner_name][court_type][-1]
     loser_rating = player_elo[row.loser_name][court_type][-1]
 
@@ -266,8 +281,8 @@ def build_elo(row):
 
     # print(expected_a + expected_b)
 
-    result_a = winner_rating + (K_multiplier * (1 - expected_a))
-    result_b = loser_rating + (K_multiplier * (0 - expected_b))
+    result_a = winner_rating + (K_multiplier_winner * (1 - expected_a))
+    result_b = loser_rating + (K_multiplier_loser * (0 - expected_b))
 
     # print(result_a, result_b)
 
@@ -318,7 +333,7 @@ def run_match(a, b, court_type, stat_mult, elo_mult, match_length):
     b_ace = player_b_stats["aces"] / player_b_stats["matches"]
     b_df = player_b_stats["df"] / player_b_stats["matches"]
 
-    SCALING_FACTOR = 0.01
+    SCALING_FACTOR = 0.02
 
     a_ace_adv = (a_ace - b_ace)
     a_df_adv  = (a_df - b_df)
@@ -339,13 +354,17 @@ def run_match(a, b, court_type, stat_mult, elo_mult, match_length):
 
     expected_a_prob, expected_b_prob = calculate_elo(player_a, player_b, court_type)
 
-    stat_based_rate_a = (player_a_win + player_a_lose) / total_strength + player_a_adj
+    def log5(a_serve_rate, b_serve_rate):
+        b_vuln = 1 - b_serve_rate
+        return (a_serve_rate * b_vuln) / (a_serve_rate * b_vuln + (1 - a_serve_rate) * (1 - b_vuln))
+
+    stat_based_rate_a = log5(player_a_win, player_b_lose) + player_a_adj
     elo_point_equivalent_a = match_prob_to_point_prob(expected_a_prob, player_a_win)
     blended_logit_a = stat_mult * prob_to_logit(stat_based_rate_a) + elo_mult * prob_to_logit(elo_point_equivalent_a)
     normalized_a_win_rate = logit_to_prob(blended_logit_a)
 
 
-    stat_based_rate_b = (player_b_win + player_b_lose) / total_strength + player_b_adj
+    stat_based_rate_b = log5(player_b_win, player_a_lose) + player_b_adj
     elo_point_equivalent_b = match_prob_to_point_prob(expected_b_prob, player_b_win)
     blended_logit_b = stat_mult * prob_to_logit(stat_based_rate_b) + elo_mult * prob_to_logit(elo_point_equivalent_b)
     normalized_b_win_rate = logit_to_prob(blended_logit_b)
@@ -355,8 +374,8 @@ def run_match(a, b, court_type, stat_mult, elo_mult, match_length):
     # print(normalized_a_win_rate)
     # print(normalized_b_win_rate)
 
-    normalized_a_win_rate = min(max(normalized_a_win_rate,0.05),0.95)
-    normalized_b_win_rate = min(max(normalized_b_win_rate,0.05),0.95)
+    normalized_a_win_rate = min(max(normalized_a_win_rate,0.02),0.98)
+    normalized_b_win_rate = min(max(normalized_b_win_rate,0.02),0.98)
 
 
     scores = []
@@ -391,17 +410,17 @@ player_names = set(players)
 calibration_log = []
 
 def prob_to_logit(p):
-    p = min(max(p, 1e-6), 1 - 1e-6)
+    p = np.clip(p, 1e-6, 1 - 1e-6)
     return np.log(p / (1 - p))
 
 def logit_to_prob(x):
     return 1 / (1 + np.exp(-x))
 
-def match_prob_to_point_prob(match_prob, serve_win_rate, games_per_match_estimate=20):
+def match_prob_to_point_prob(match_prob, serve_win_rate):
     match_prob = min(max(match_prob, 0.02), 0.98)
     logit_match = prob_to_logit(match_prob)
 
-    COMPOUNDING_FACTOR = 4
+    COMPOUNDING_FACTOR = 3.5
     logit_point = logit_match / COMPOUNDING_FACTOR
     return logit_to_prob(logit_point + prob_to_logit(serve_win_rate)) 
 
@@ -453,25 +472,19 @@ def run_monte_carlo_simulation(iterations):
             else:
                 actual_loser_wins += 1
 
-            print(f"Total matches evaluated: {correct_predictions + incorrect_predictions} out of {len(data)}")
-        
-
         total = player_a_wins + player_b_wins
 
         if total > 0:
             raw_prob = player_a_wins / total
+            # predicted_prob = (0.55 * raw_prob + 0.45 * 0.5)
 
-            predicted_prob = (0.55 * raw_prob + 0.45 * 0.5)
-            
-            outcome = label
+            calibration_log.append((raw_prob, label))
 
-            calibration_log.append((predicted_prob, outcome))
-
-        if actual_winner_wins > actual_loser_wins:
-            correct_predictions += 1
-        else:
-            incorrect_predictions += 1
-
+            if actual_winner_wins > actual_loser_wins:
+                correct_predictions += 1
+            else:
+                incorrect_predictions += 1
+        # else: no prior data for one of the players — skip this match's accuracy/calibration entirely
 
         build_stats(row)
         build_elo(row)
@@ -482,7 +495,7 @@ def run_monte_carlo_simulation(iterations):
     print(f"Accuracy: {correct_predictions / (correct_predictions + incorrect_predictions) * 100:.2f}%")
 
 
-def calibration_report(log, n_bins=10):
+def calibration_report(log, n_bins=20):
     probs = np.array([p for p, outcome in log])
     outcomes = np.array([outcome for p, outcome in log])
 
@@ -505,8 +518,34 @@ def calibration_report(log, n_bins=10):
 
 
 run_monte_carlo_simulation(51)
-calibration_report(calibration_log)
 
+
+probs = np.array([p for p,_ in calibration_log])
+labels = np.array([y for _,y in calibration_log])
+
+X = prob_to_logit(probs).reshape(-1,1)
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    labels,
+    test_size=0.3,
+    random_state=42
+)
+
+# model = LogisticRegression()
+# model.fit(X_train, y_train)
+
+# calibrated_probs_platt = model.predict_proba(X_test)[:,1]
+
+# calibrated_log_platt = list(zip(calibrated_probs_platt, y_test))
+
+iso = IsotonicRegression(out_of_bounds='clip')
+iso.fit(X_train, y_train)          # note: fit on raw probabilities, not logits
+calibrated_probs_iso = iso.predict(X_test)
+calibrated_log_iso = list(zip(calibrated_probs_iso, y_test))
+
+# calibration_report(calibrated_log_platt)
+calibration_report(calibrated_log_iso)
 
 # print(np.mean(losses))
 
