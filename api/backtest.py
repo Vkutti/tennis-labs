@@ -78,32 +78,10 @@ players = ['Tommy Haas', 'Juan Balcells', 'Alberto Martin', 'Juan Carlos Ferrero
             'Chun Hsin Tseng', 'Lukas Klein', 'Arthur Cazaux', 'Shintaro Mochizuki', 'Hugo Grenier', 'Luca Nardi', 'Aleksandar Kovacevic']
 
 
-
-
-
-def build_set_rows(scores, max_sets=5):
-    player_a_sets = scores[0::2]
-    player_b_sets = scores[1::2]
-    set_rows = []
-
-    for i in range(max_sets):
-        played = i < len(player_a_sets) and i < len(player_b_sets)
-        set_rows.append(
-            {
-                "a": player_a_sets[i] if played else "",
-                "b": player_b_sets[i] if played else "",
-                "played": played,
-            }
-        )
-
-    return set_rows
-
-
-def run_tiebreak(a_win_rate, b_win_rate, a_player: str, b_player: str):
+def run_tiebreak(a_win_rate, b_win_rate, a_player: str, b_player: str, server):
     a_points = 0
     b_points = 0
     total_points = 0
-    server = 1
     
     while True:
         if server == 1:
@@ -183,7 +161,8 @@ def run_set(a_win_rate, b_win_rate, a_player: str, b_player: str, server: int):
                 return list((b_player, a_score, b_score))
             
         if a_score == 6 and b_score == 6:
-            return run_tiebreak(a_win_rate, b_win_rate, a_player, b_player)
+            next_server = 2 if server == 1 else 1
+            return run_tiebreak(a_win_rate, b_win_rate, a_player, b_player, next_server)
 
             
         if server == 1:
@@ -208,114 +187,54 @@ player_stats = {
 }
 
 def build_stats(row):
-    w_all_data = []
-    l_all_data = []
-
-
     winner = str(row.winner_name).strip()
     loser = str(row.loser_name).strip()
     court_surface = str(row.surface)
-
     if court_surface not in court_types:
         return
 
     try:
-        w_serve_to_points = float(row.w_svpt)
-        w_first_serves = float(row.w_1stWon)
-        w_second_serves = float(row.w_2ndWon)
-        w_aces = float(row.w_ace)
-        w_df = float(row.w_df)
-
-        if w_serve_to_points > 0:
-
-            w_serves_to_points = (w_first_serves + w_second_serves) / w_serve_to_points
-
-            l_return_accuracy = (w_serve_to_points - (w_first_serves + w_second_serves)) / w_serve_to_points
-
-            w_all_data.append([
-                winner,
-                court_surface,
-                w_serves_to_points,
-                l_return_accuracy,
-                w_aces,
-                w_df,
-                1
-            ])
-
+        w_svpt, w_1st, w_2nd = float(row.w_svpt), float(row.w_1stWon), float(row.w_2ndWon)
+        l_svpt, l_1st, l_2nd = float(row.l_svpt), float(row.l_1stWon), float(row.l_2ndWon)
+        w_ace, w_df = float(row.w_ace), float(row.w_df)
+        l_ace, l_df = float(row.l_ace), float(row.l_df)
     except (ValueError, TypeError):
         return
 
-
-    try:
-        l_serve_to_points = float(row.l_svpt)
-        l_first_serves = float(row.l_1stWon)
-        l_second_serves = float(row.l_2ndWon)
-        l_aces = float(row.l_ace)
-        l_df = float(row.l_df)
-
-        if l_serve_to_points > 0:
-
-            l_serves_to_points = (l_first_serves + l_second_serves) / l_serve_to_points
-
-            w_return_accuracy = (l_serve_to_points - (l_first_serves + l_second_serves)) / l_serve_to_points
-
-
-            l_all_data.append([
-                loser,
-                court_surface,
-                l_serves_to_points,
-                w_return_accuracy,
-                l_aces,
-                l_df,
-                1
-            ])
-
-    except (ValueError, TypeError):
+    if w_svpt <= 0 or l_svpt <= 0:
         return
 
-    total_all_data = w_all_data + l_all_data
+    w_serve_rate = (w_1st + w_2nd) / w_svpt
+    l_serve_rate = (l_1st + l_2nd) / l_svpt
 
-    for i in total_all_data:
+    w_return_rate = 1 - l_serve_rate
+    l_return_rate = 1 - w_serve_rate
 
-        player = i[0]
-        surface = i[1]
-        serve_value = i[2]
-        return_value = i[3]
-        aces = i[4]
-        df = i[5]
-        matches = i[6]
-
-
-        if (
-            player in player_stats 
-            and surface in court_types
-            and not math.isnan(serve_value)
-            and not math.isnan(return_value)
-        ):
-
-            player_stats[player][surface]["serve"] += serve_value
-            player_stats[player][surface]["return"] += return_value
-            player_stats[player][surface]["aces"] += aces
-            player_stats[player][surface]["df"] += df
-            player_stats[player][surface]["matches"] += matches
+    for player, surface, serve_v, return_v, aces, df in [
+        (winner, court_surface, w_serve_rate, w_return_rate, w_ace, w_df),
+        (loser,  court_surface, l_serve_rate, l_return_rate, l_ace, l_df),
+    ]:
+        if player in player_stats and not math.isnan(serve_v) and not math.isnan(return_v):
+            s = player_stats[player][surface]
+            s["serve"] += serve_v
+            s["return"] += return_v
+            s["aces"] += aces
+            s["df"] += df
+            s["matches"] += 1
     
     # print(total_all_data_dict)
 
 player_elo = {}
 
-data = (
-        pd.read_csv("atp_matches_2008.csv")
-        .drop_duplicates()
-        .sort_values("tourney_date")
-    )
+data = (pd.read_csv("atp_matches_2008.csv").drop_duplicates().sort_values("tourney_date"))
 
 
 def new_player():
     return {
-        "Hard": [1500],
-        "Grass": [1500],
-        "Clay": [1500],
-        "Carpet": [1500],
+        "Hard": [1200],
+        "Grass": [1200],
+        "Clay": [1200],
+        "Carpet": [1200],
     }
 
 for row in data.itertuples(index=False):
@@ -328,7 +247,6 @@ def build_elo(row):
     K_multiplier = 40
 
     predictions = []
-    losses = []
 
     court_type = row.surface
     winner_rating = player_elo[row.winner_name][court_type][-1]
@@ -359,21 +277,17 @@ def build_elo(row):
 losses = []
 
 def calculate_elo(player_a, player_b, court_type):
-    k = 32
-    elo_a = player_elo[player_a][court_type][-1] if player_elo[player_a][court_type] else 1500
-    elo_b = player_elo[player_b][court_type][-1] if player_elo[player_b][court_type] else 1500
+    elo_a = player_elo[player_a][court_type][-1] if player_elo[player_a][court_type] else 1200
+    elo_b = player_elo[player_b][court_type][-1] if player_elo[player_b][court_type] else 1200
 
     expected_a = 1 / (1 + 10 ** ((elo_b - elo_a) / 400))
     expected_b = 1 / (1 + 10 ** ((elo_a - elo_b) / 400))
-
-    loss = -np.log(expected_a)
-    losses.append(loss)
 
     # print(expected_a, expected_b)
 
     return expected_a, expected_b
 
-def run_match(a, b, court_type, stat_mult, elo_mult):
+def run_match(a, b, court_type, stat_mult, elo_mult, match_length):
     player_a_win = 0
     player_b_win = 0
     player_a_lose = 0
@@ -425,17 +339,24 @@ def run_match(a, b, court_type, stat_mult, elo_mult):
 
     expected_a_prob, expected_b_prob = calculate_elo(player_a, player_b, court_type)
 
-    normalized_a_win_rate = (stat_mult * ((player_a_win + player_a_lose) / total_strength) + player_a_adj) + (elo_mult * expected_a_prob)
+    stat_based_rate_a = (player_a_win + player_a_lose) / total_strength + player_a_adj
+    elo_point_equivalent_a = match_prob_to_point_prob(expected_a_prob, player_a_win)
+    blended_logit_a = stat_mult * prob_to_logit(stat_based_rate_a) + elo_mult * prob_to_logit(elo_point_equivalent_a)
+    normalized_a_win_rate = logit_to_prob(blended_logit_a)
 
-    normalized_b_win_rate = (stat_mult * ((player_b_win + player_b_lose) / total_strength) + player_b_adj) + (elo_mult * (expected_b_prob))
+
+    stat_based_rate_b = (player_b_win + player_b_lose) / total_strength + player_b_adj
+    elo_point_equivalent_b = match_prob_to_point_prob(expected_b_prob, player_b_win)
+    blended_logit_b = stat_mult * prob_to_logit(stat_based_rate_b) + elo_mult * prob_to_logit(elo_point_equivalent_b)
+    normalized_b_win_rate = logit_to_prob(blended_logit_b)
 
     # normalized_a_win_rate = ((player_a_win + player_a_lose) / (player_a_win + player_b_win)) + (player_a_adj)
     # normalized_b_win_rate = ((player_b_win + player_b_lose) / (player_a_win + player_b_win)) + (player_b_adj)
     # print(normalized_a_win_rate)
     # print(normalized_b_win_rate)
 
-    normalized_a_win_rate = min(max(normalized_a_win_rate,0.02),0.98)
-    normalized_b_win_rate = min(max(normalized_b_win_rate,0.02),0.98)
+    normalized_a_win_rate = min(max(normalized_a_win_rate,0.05),0.95)
+    normalized_b_win_rate = min(max(normalized_b_win_rate,0.05),0.95)
 
 
     scores = []
@@ -451,13 +372,13 @@ def run_match(a, b, court_type, stat_mult, elo_mult):
         elif winner[0] == player_b:
             player_b_set_score += 1
 
-        if player_a_set_score >= 3:
+        if player_a_set_score >= match_length:
             # print(f'Winner of the match is {player_a}')
             # print(f'{player_a}: {player_a_set_score}')
             # print(f'{player_b}: {player_b_set_score}')
             # print(list((player_a, player_b, scores)))
             return list((player_a, player_b, scores))
-        elif player_b_set_score >= 3:
+        elif player_b_set_score >= match_length:
             # print(f'Winner of the match is {player_b}')
             # print(f'{player_a}: {player_a_set_score}')
             # print(f'{player_b}: {player_b_set_score}')
@@ -466,6 +387,24 @@ def run_match(a, b, court_type, stat_mult, elo_mult):
  
 
 player_names = set(players)
+
+calibration_log = []
+
+def prob_to_logit(p):
+    p = min(max(p, 1e-6), 1 - 1e-6)
+    return np.log(p / (1 - p))
+
+def logit_to_prob(x):
+    return 1 / (1 + np.exp(-x))
+
+def match_prob_to_point_prob(match_prob, serve_win_rate, games_per_match_estimate=20):
+    match_prob = min(max(match_prob, 0.02), 0.98)
+    logit_match = prob_to_logit(match_prob)
+
+    COMPOUNDING_FACTOR = 4
+    logit_point = logit_match / COMPOUNDING_FACTOR
+    return logit_to_prob(logit_point + prob_to_logit(serve_win_rate)) 
+
 
 def run_monte_carlo_simulation(iterations):
     correct_predictions = 0
@@ -476,42 +415,98 @@ def run_monte_carlo_simulation(iterations):
     # data = data[["surface", "winner_name", "loser_name"]].dropna()
 
     for row in data.itertuples(index=False):
-        winner = row.winner_name
-        loser = row.loser_name
+        winner = str(row.winner_name).strip()
+        loser = str(row.loser_name).strip()
+        length = row.best_of
         
         if winner not in player_names or loser not in player_names:
             continue
 
+        player_a_wins = 0
+        player_b_wins = 0
+
+        if random.random() < 0.5:
+            player_a = winner
+            player_b = loser
+            label = 1
+        else:
+            player_a = loser
+            player_b = winner
+            label = 0
+
         actual_winner_wins = 0
         actual_loser_wins = 0
 
-        for i in range(iterations):
-            match = run_match(winner, loser, row.surface, 0.4, 0.6)
+        for _ in range(iterations):
+            match = run_match(player_a, player_b, row.surface, 0.4, 0.6, ((length + 1) // 2))
 
             if match is None:
                 continue
+
+            if match[0] == player_a:
+                player_a_wins += 1
+            else:
+                player_b_wins += 1
 
             if match[0] == winner:
                 actual_winner_wins += 1
             else:
                 actual_loser_wins += 1
 
+            print(f"Total matches evaluated: {correct_predictions + incorrect_predictions} out of {len(data)}")
+        
+
+        total = player_a_wins + player_b_wins
+
+        if total > 0:
+            raw_prob = player_a_wins / total
+
+            predicted_prob = (0.55 * raw_prob + 0.45 * 0.5)
+            
+            outcome = label
+
+            calibration_log.append((predicted_prob, outcome))
 
         if actual_winner_wins > actual_loser_wins:
             correct_predictions += 1
         else:
             incorrect_predictions += 1
 
+
         build_stats(row)
         build_elo(row)
 
 
-    print(correct_predictions)
-    print(incorrect_predictions)
+    print(f"Correct: {correct_predictions}")
+    print(f"Incorrect: {incorrect_predictions}")
     print(f"Accuracy: {correct_predictions / (correct_predictions + incorrect_predictions) * 100:.2f}%")
 
- 
-run_monte_carlo_simulation(51)
 
-print(np.mean(losses))
+def calibration_report(log, n_bins=10):
+    probs = np.array([p for p, outcome in log])
+    outcomes = np.array([outcome for p, outcome in log])
+
+    bins = np.linspace(0.0, 1.0, n_bins + 1)
+    bin_idx = np.digitize(probs, bins) - 1
+
+    print(f"{'Buckets':<15}{'N':<8}{'Avg Predicted':<16}{'Actual Win Rate':<16}")
+    for i in range(n_bins):
+        mask = bin_idx == i
+        n = mask.sum()
+        if n == 0:
+            continue
+        avg_pred = probs[mask].mean()
+        actual_rate = outcomes[mask].mean()
+        print(f"{bins[i]:.2f}-{bins[i+1]:.2f}        {n:<8}{avg_pred:<16.3f}{actual_rate:<16.3f}")
+
+    brier = np.mean((probs - outcomes) ** 2)
+    print(f"\nBrier score: {brier:.4f}")
+
+
+
+run_monte_carlo_simulation(51)
+calibration_report(calibration_log)
+
+
+# print(np.mean(losses))
 
