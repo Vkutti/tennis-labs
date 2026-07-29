@@ -5,6 +5,12 @@ from flask import Flask, render_template, request, redirect, url_for
 import random
 import json
 
+import os
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+STATS_PATH = os.path.join(BASE_DIR, "player_surface_stats.json")
+ELO_PATH = os.path.join(BASE_DIR, "player_surface_elo.json")
+
 app = Flask(__name__, static_folder='static')
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 app.jinja_env.auto_reload = True
@@ -235,10 +241,10 @@ def run_set(a_win_rate, b_win_rate, a_player: str, b_player: str, server: int):
             server = 1
 
 
-with open("player_surface_stats.json", "r") as file:
+with open(STATS_PATH, "r") as file:
     player_stats = json.load(file)
 
-with open("player_surface_elo.json", "r") as file:
+with open(ELO_PATH, "r") as file:
     player_elo = json.load(file)
 
 losses = []
