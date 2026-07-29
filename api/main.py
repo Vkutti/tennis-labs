@@ -120,10 +120,14 @@ def run_app():
 
         if player_a == "empty" or player_b == "empty":
             return render_template('index.html', winner = "None")
+        
         else:
             match = run_match(player_a, player_b, court_type)
             scores = match[2]
             set_rows = build_set_rows(scores)
+
+            if scores == None:
+                return render_template('index.html', winner = "None")
 
             return render_template(
                 'results.html',
@@ -390,10 +394,10 @@ def run_monte_carlo_simulation(iterations):
     print(f"Accuracy: {correct_predictions / (correct_predictions + incorrect_predictions) * 100:.2f}%")
 
  
-run_monte_carlo_simulation(51)
+# run_monte_carlo_simulation(51)
 
-print(np.mean(losses))
+# print(np.mean(losses))
 
-
-# if __name__ == '__main__':
-    # app.run()
+ 
+if __name__ == '__main__':
+    app.run(debug=True)
