@@ -16,6 +16,8 @@ app.config["TEMPLATES_AUTO_RELOAD"] = True
 app.jinja_env.auto_reload = True
 
 
+
+
 players = ['Tommy Haas', 'Juan Balcells', 'Alberto Martin', 'Juan Carlos Ferrero', 'Michael Chang', 'Magnus Gustafsson', 'Thomas Johansson', 'Sjeng Schalken', 'Tomas Behrend',
             'Gaston Gaudio', 'Jiri Novak', 'Marc Rosset', 'John Van Lottum', 'Jan Michael Gambill', 'Magnus Norman', 'Andrea Gaudenzi', 'Albert Portas', 'Galo Blanco', 
             'Markus Hantschk', 'Andrei Medvedev', 'Christophe Rochus', 'Andrei Pavel', 'Juan Antonio Marin', 'Markus Hipfl', 'Stefan Koubek', 'Andrew Ilie', 'Sergi Bruguera', 
@@ -358,8 +360,8 @@ def run_monte_carlo_simulation(iterations):
     correct_predictions = 0
     incorrect_predictions = 0
 
-    data = pd.read_csv("atp_matches_2008.csv", low_memory=False, na_values=[' ', ''])
-
+    data = pd.read_csv(os.path.join(BASE_DIR, "atp_matches_2008.csv"), low_memory=False, na_values=[' ', ''])
+    
     data.columns = data.columns.str.strip()
 
     data = data[["surface", "winner_name", "loser_name"]].dropna()
