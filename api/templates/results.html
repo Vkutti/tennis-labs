@@ -12,9 +12,7 @@
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <!-- Tom Select -->
   <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
-
 
   <title>TennisLab</title>
 
@@ -24,498 +22,491 @@
 
 
 <body>
+  <div class="aurora-bg" aria-hidden="true">
+    <span class="aurora-layer aurora-layer-1"></span>
+    <span class="aurora-layer aurora-layer-2"></span>
+    <span class="aurora-layer aurora-layer-3"></span>
+  </div>
 
 
-<div class="aurora-bg" aria-hidden="true">
-  <span class="aurora-layer aurora-layer-1"></span>
-  <span class="aurora-layer aurora-layer-2"></span>
-  <span class="aurora-layer aurora-layer-3"></span>
-</div>
+  <div class="page-loader" id="page-loader" aria-hidden="true">
+    <div class="loader-orb"></div>
+    <p>Simulating match...</p>
+  </div>
+
+  <div class="page-shell">
+  <div class="title fade-in-up">
+
+    <p class="eyebrow">
+      Match Intelligence
+    </p>
+
+    <h1>
+      TennisLab
+    </h1>
+
+  </div>
 
 
 
-<div class="page-loader" id="page-loader" aria-hidden="true">
-  <div class="loader-orb"></div>
-  <p>Simulating match...</p>
-</div>
+
+  <form action="/simulate" method="post" class="match-form fade-in-up" style="animation-delay:120ms;">
+
+
+  <div class="versus">
+
+
+  <!-- PLAYER A -->
+
+  <div class="field-group">
+
+  <label for="tennis_players_a">
+  Player A
+  </label>
+
+
+  <select 
+  id="tennis_players_a"
+  name="tennis_players_a"
+  required
+  >
+
+  <option value="">
+  Search player...
+  </option>
+
+
+  {% for player in players %}
+  <option value="{{ player }}"
+  {% if player == player_a %}selected{% endif %}
+  >
+  {{ player }}
+  </option>
+  {% endfor %}
+
+
+  </select>
+
+
+  </div>
 
 
 
-<div class="page-shell">
-
-
-<div class="title fade-in-up">
-
-  <p class="eyebrow">
-    Match Intelligence
-  </p>
-
-  <h1>
-    TennisLab
+  <h1 class="vs-badge">
+  VS
   </h1>
 
-</div>
 
 
 
+  <!-- PLAYER B -->
 
-<form action="/simulate" method="post" class="match-form fade-in-up" style="animation-delay:120ms;">
+  <div class="field-group">
 
+  <label for="tennis_players_b">
+  Player B
+  </label>
 
-<div class="versus">
 
+  <select 
+  id="tennis_players_b"
+  name="tennis_players_b"
+  required
+  >
 
-<!-- PLAYER A -->
+  <option value="">
+  Search player...
+  </option>
 
-<div class="field-group">
 
-<label for="tennis_players_a">
-Player A
-</label>
+  {% for player in players %}
+  <option value="{{ player }}"
+  {% if player == player_b %}selected{% endif %}
+  >
+  {{ player }}
+  </option>
+  {% endfor %}
 
 
-<select 
-id="tennis_players_a"
-name="tennis_players_a"
-required
->
+  </select>
 
-<option value="">
-Search player...
-</option>
 
+  </div>
 
-{% for player in players %}
-<option value="{{ player }}"
-{% if player == player_a %}selected{% endif %}
->
-{{ player }}
-</option>
-{% endfor %}
 
+  </div>
 
-</select>
 
 
-</div>
 
 
+  <!-- COURT SURFACE -->
 
-<h1 class="vs-badge">
-VS
-</h1>
+  <div class="field-group court-group">
 
 
+  <label for="court_type">
+  Court Surface
+  </label>
 
 
-<!-- PLAYER B -->
+  <select 
+  id="court_type"
+  name="court_type"
+  required
+  >
 
-<div class="field-group">
 
-<label for="tennis_players_b">
-Player B
-</label>
+  <option value="">
+  Select surface...
+  </option>
 
 
-<select 
-id="tennis_players_b"
-name="tennis_players_b"
-required
->
+  <option value="Hard"
+  {% if court_type == "Hard" %}selected{% endif %}
+  >
+  Hard
+  </option>
 
-<option value="">
-Search player...
-</option>
 
+  <option value="Clay"
+  {% if court_type == "Clay" %}selected{% endif %}
+  >
+  Clay
+  </option>
 
-{% for player in players %}
-<option value="{{ player }}"
-{% if player == player_b %}selected{% endif %}
->
-{{ player }}
-</option>
-{% endfor %}
 
+  <option value="Grass"
+  {% if court_type == "Grass" %}selected{% endif %}
+  >
+  Grass
+  </option>
 
-</select>
 
+  <option value="Carpet"
+  {% if court_type == "Carpet" %}selected{% endif %}
+  >
+  Carpet
+  </option>
 
-</div>
 
+  </select>
 
-</div>
 
+  </div>
 
 
 
 
-<!-- COURT SURFACE -->
+  <button type="submit">
 
-<div class="field-group court-group">
+  <span class="button-spinner"></span>
 
+  <span class="button-label">
+  Simulate Match
+  </span>
 
-<label for="court_type">
-Court Surface
-</label>
+  </button>
 
 
-<select 
-id="court_type"
-name="court_type"
-required
->
 
+  </form>
 
-<option value="">
-Select surface...
-</option>
 
 
-<option value="Hard"
-{% if court_type == "Hard" %}selected{% endif %}
->
-Hard
-</option>
 
 
-<option value="Clay"
-{% if court_type == "Clay" %}selected{% endif %}
->
-Clay
-</option>
 
+  <h2 class="winner-title fade-in-up" style="animation-delay:220ms;">
 
-<option value="Grass"
-{% if court_type == "Grass" %}selected{% endif %}
->
-Grass
-</option>
+  <span class="winner-icon">
+  🏆
+  </span>
 
+  Winner:
 
-<option value="Carpet"
-{% if court_type == "Carpet" %}selected{% endif %}
->
-Carpet
-</option>
+  <span>
+  {{ winner }}
+  </span>
 
+  </h2>
 
-</select>
 
 
-</div>
 
 
 
 
-<button type="submit">
+  <div class="scoreboard fade-in-up" style="animation-delay:300ms;">
 
-<span class="button-spinner"></span>
 
-<span class="button-label">
-Simulate Match
-</span>
+  <div class="header">
+  Centre Court
+  </div>
 
-</button>
 
+  <div class="subheader">
+  Gentlemen's Singles
+  </div>
 
 
-</form>
 
 
 
+  <div class="player {% if winner == player_a %}winner{% endif %}">
 
 
+  <div class="info">
 
-<h2 class="winner-title fade-in-up" style="animation-delay:220ms;">
+  <div class="name">
+  {{ player_a }}
+  </div>
 
-<span class="winner-icon">
-🏆
-</span>
+  </div>
 
-Winner:
 
-<span>
-{{ winner }}
-</span>
 
-</h2>
+  <div class="sets">
 
+  {% for set_row in set_rows %}
 
+  <div 
+  class="set-cell {% if not set_row.played %}empty-set{% endif %}"
+  data-played="{{1 if set_row.played else 0}}"
+  >
 
+  {{ set_row.a if set_row.played else "—" }}
 
+  </div>
 
+  {% endfor %}
 
+  </div>
 
-<div class="scoreboard fade-in-up" style="animation-delay:300ms;">
 
+  </div>
 
-<div class="header">
-Centre Court
-</div>
 
 
-<div class="subheader">
-Gentlemen's Singles
-</div>
 
 
 
 
+  <div class="player {% if winner == player_b %}winner{% endif %}">
 
-<div class="player {% if winner == player_a %}winner{% endif %}">
 
+  <div class="info">
 
-<div class="info">
+  <div class="name">
+  {{ player_b }}
+  </div>
 
-<div class="name">
-{{ player_a }}
-</div>
+  </div>
 
-</div>
 
 
+  <div class="sets">
 
-<div class="sets">
+  {% for set_row in set_rows %}
 
-{% for set_row in set_rows %}
+  <div 
+  class="set-cell {% if not set_row.played %}empty-set{% endif %}"
+  data-played="{{1 if set_row.played else 0}}"
+  >
 
-<div 
-class="set-cell {% if not set_row.played %}empty-set{% endif %}"
-data-played="{{1 if set_row.played else 0}}"
->
+  {{ set_row.b if set_row.played else "—" }}
 
-{{ set_row.a if set_row.played else "—" }}
+  </div>
 
-</div>
+  {% endfor %}
 
-{% endfor %}
+  </div>
 
-</div>
 
+  </div>
 
-</div>
 
 
+  </div>
 
 
 
+  </div>
 
 
-<div class="player {% if winner == player_b %}winner{% endif %}">
 
 
-<div class="info">
 
-<div class="name">
-{{ player_b }}
-</div>
 
-</div>
+  <!-- Tom Select -->
 
+  <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
 
 
-<div class="sets">
+  <script>
 
-{% for set_row in set_rows %}
 
-<div 
-class="set-cell {% if not set_row.played %}empty-set{% endif %}"
-data-played="{{1 if set_row.played else 0}}"
->
+  new TomSelect("#tennis_players_a", {
 
-{{ set_row.b if set_row.played else "—" }}
+  create:false,
 
-</div>
+  maxOptions:100,
 
-{% endfor %}
+  placeholder:"Search player...",
 
-</div>
+  sortField:{
+  field:"text",
+  direction:"asc"
+  }
 
+  });
 
-</div>
 
 
+  new TomSelect("#tennis_players_b", {
 
-</div>
+  create:false,
 
+  maxOptions:100,
 
+  placeholder:"Search player...",
 
-</div>
+  sortField:{
+  field:"text",
+  direction:"asc"
+  }
 
+  });
 
 
 
+  new TomSelect("#court_type", {
 
+  create:false,
 
-<!-- Tom Select -->
+  placeholder:"Select surface..."
 
-<script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+  });
 
 
-<script>
 
+  </script>
 
-new TomSelect("#tennis_players_a", {
 
-create:false,
 
-maxOptions:100,
 
-placeholder:"Search player...",
 
-sortField:{
-field:"text",
-direction:"asc"
-}
+  <script>
+  function animateMatch() {
 
-});
+  const players = document.querySelectorAll(".player");
 
+  if(players.length < 2) return;
 
 
-new TomSelect("#tennis_players_b", {
+  const setsAContainer = players[0].querySelector(".sets");
+  const setsBContainer = players[1].querySelector(".sets");
 
-create:false,
 
-maxOptions:100,
+  if(!setsAContainer || !setsBContainer)
+  return;
 
-placeholder:"Search player...",
 
-sortField:{
-field:"text",
-direction:"asc"
-}
 
-});
+  setsAContainer.classList.add("is-animating");
+  setsBContainer.classList.add("is-animating");
 
 
 
-new TomSelect("#court_type", {
+  const playerA = setsAContainer.querySelectorAll("div");
+  const playerB = setsBContainer.querySelectorAll("div");
 
-create:false,
 
-placeholder:"Select surface..."
+  let revealIndex = 0;
 
-});
 
 
+  playerA.forEach((scoreA,i)=>{
 
-</script>
 
+  const scoreB = playerB[i];
 
 
+  if(!scoreA || !scoreB)
+  return;
 
 
-<script>
-function animateMatch() {
+  if(scoreA.dataset.played !== "1")
+  return;
 
-const players = document.querySelectorAll(".player");
 
-if(players.length < 2) return;
 
+  setTimeout(()=>{
 
-const setsAContainer = players[0].querySelector(".sets");
-const setsBContainer = players[1].querySelector(".sets");
 
+  scoreA.classList.add("show");
+  scoreB.classList.add("show");
 
-if(!setsAContainer || !setsBContainer)
-return;
 
+  const valA=parseInt(scoreA.innerText)||0;
+  const valB=parseInt(scoreB.innerText)||0;
 
 
-setsAContainer.classList.add("is-animating");
-setsBContainer.classList.add("is-animating");
 
+  if(valA>valB){
 
+  scoreA.classList.add("winner-set");
+  scoreB.classList.remove("winner-set");
 
-const playerA = setsAContainer.querySelectorAll("div");
-const playerB = setsBContainer.querySelectorAll("div");
+  }
 
+  else if(valB>valA){
 
-let revealIndex = 0;
+  scoreB.classList.add("winner-set");
+  scoreA.classList.remove("winner-set");
 
+  }
 
 
-playerA.forEach((scoreA,i)=>{
+  },revealIndex*700);
 
 
-const scoreB = playerB[i];
+  revealIndex++;
 
 
-if(!scoreA || !scoreB)
-return;
+  });
 
 
-if(scoreA.dataset.played !== "1")
-return;
 
+  setTimeout(()=>{
 
+  const finalWinner=document.querySelector(".player.winner");
 
-setTimeout(()=>{
+  if(finalWinner){
 
+  finalWinner.classList.add("final-highlight");
 
-scoreA.classList.add("show");
-scoreB.classList.add("show");
+  }
 
 
-const valA=parseInt(scoreA.innerText)||0;
-const valB=parseInt(scoreB.innerText)||0;
+  },revealIndex*700+120);
 
 
 
-if(valA>valB){
+  }
 
-scoreA.classList.add("winner-set");
-scoreB.classList.remove("winner-set");
 
-}
 
-else if(valB>valA){
+  window.onload=animateMatch;
 
-scoreB.classList.add("winner-set");
-scoreA.classList.remove("winner-set");
+  </script>
 
-}
 
 
-},revealIndex*700);
+  <script src="/static/ui.js"></script>
 
 
-revealIndex++;
 
-
-});
-
-
-
-setTimeout(()=>{
-
-const finalWinner=document.querySelector(".player.winner");
-
-if(finalWinner){
-
-finalWinner.classList.add("final-highlight");
-
-}
-
-
-},revealIndex*700+120);
-
-
-
-}
-
-
-
-window.onload=animateMatch;
-
-</script>
-
-
-
-<script src="/static/ui.js"></script>
-
-
-
-</body>
+  </body>
 
 </html>

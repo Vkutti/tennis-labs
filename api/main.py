@@ -7,6 +7,8 @@ import json
 
 import os
 
+import joblib
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATS_PATH = os.path.join(BASE_DIR, "player_surface_stats.json")
 ELO_PATH = os.path.join(BASE_DIR, "player_surface_elo.json")
@@ -15,7 +17,8 @@ app = Flask(__name__, static_folder='static')
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 app.jinja_env.auto_reload = True
 
-
+CALIBRATION_PATH = os.path.join(BASE_DIR, "calibration_model.pkl")
+iso = joblib.load(CALIBRATION_PATH)
 
 
 players = ['Tommy Haas', 'Juan Balcells', 'Alberto Martin', 'Juan Carlos Ferrero', 'Michael Chang', 'Magnus Gustafsson', 'Thomas Johansson', 'Sjeng Schalken', 'Tomas Behrend',
@@ -127,120 +130,156 @@ def run_app():
         court_type = request.form.get('court_type')
 
         if player_a == "empty" or player_b == "empty":
-            return render_template('index.html', winner = "None")
-        
-        else:
-            match = run_match(player_a, player_b, court_type)
-            scores = match[2]
-            set_rows = build_set_rows(scores)
+            return render_template('index.html', winner="None")
 
-            if scores == None:
-                return render_template('index.html', winner = "None")
+        prediction = predict_winner(player_a, player_b, court_type)
 
-            return render_template(
-                'results.html',
-                winner=match[0],
-                players=players,
-                player_a=player_a,
-                player_b=player_b,
-                set_rows=set_rows,
-            )
+        if prediction is None:
+            return render_template('index.html', winner="None")
 
-    return render_template('index.html', winner = "None")
+        scores = prediction["sample_match"][2]
+        set_rows = build_set_rows(scores)
 
+        return render_template(
+            'results.html',
+            winner=prediction["winner"],
+            players=players,
+            player_a=player_a,
+            player_b=player_b,
+            set_rows=set_rows,
+            win_prob_a=round(prediction["prob_a"] * 100, 1),
+            win_prob_b=round(prediction["prob_b"] * 100, 1),
+        )
 
+    return render_template('index.html', winner="None")
 
-def run_tiebreak(a_win_rate, b_win_rate, a_player: str, b_player: str):
+def prob_to_logit(p):
+    p = np.clip(p, 1e-6, 1 - 1e-6)
+    return np.log(p / (1 - p))
+
+def logit_to_prob(x):
+    return 1 / (1 + np.exp(-x))
+
+def match_prob_to_point_prob(match_prob, serve_win_rate):
+    match_prob = min(max(match_prob, 0.02), 0.98)
+    logit_match = prob_to_logit(match_prob)
+    COMPOUNDING_FACTOR = 3.5
+    logit_point = logit_match / COMPOUNDING_FACTOR
+    return logit_to_prob(logit_point + prob_to_logit(serve_win_rate))
+
+def run_tiebreak(a_win_rate, b_win_rate, a_player, b_player, first_server):
+
     a_points = 0
     b_points = 0
-    total_points = 0
-    server = 1
-    
+    point_number = 0
+
     while True:
-        if server == 1:
-            win_rate = a_win_rate
-            winner = 'a' if random.random() <= win_rate else 'b'
+
+        # Tiebreak serving pattern:
+        # First server serves point 1
+        # Other player serves points 2-3
+        # First server serves points 4-5
+        # etc.
+
+        if point_number == 0:
+            server = first_server
         else:
-            win_rate = b_win_rate
-            winner = 'b' if random.random() <= win_rate else 'a'
-        
+            block = (point_number - 1) // 2
+
+            if block % 2 == 0:
+                server = 2 if first_server == 1 else 1
+            else:
+                server = first_server
+
+        if server == 1:
+            winner = 'a' if random.random() < a_win_rate else 'b'
+        else:
+            winner = 'b' if random.random() < b_win_rate else 'a'
+
         if winner == 'a':
             a_points += 1
         else:
             b_points += 1
-        
+
+        point_number += 1
+
+        # Tiebreak is won by 7+ points with a 2-point margin
         if (a_points >= 7 or b_points >= 7) and abs(a_points - b_points) >= 2:
+
             if a_points > b_points:
-                return list((a_player, 7, b_points))
+                return [a_player, 7, 6]
             else:
-                return list((b_player, a_points, 7))
-        
-        total_points += 1
-
-        if total_points >= 1 and total_points % 2 == 1:
-            server = 2 if server == 1 else 1
-
+                return [b_player, 6, 7]
 
 
 def run_game(server_win_rate):
     server_points, return_points = 0, 0
-    
+
     while True:
+
         if random.random() <= server_win_rate:
             server_points += 1
         else:
             return_points += 1
-        
+
         if server_points >= 4 or return_points >= 4:
             if abs(server_points - return_points) >= 2:
                 return 'server' if server_points > return_points else 'return'
 
-        
 
+def run_set(a_win_rate, b_win_rate, a_player, b_player, server):
 
-def run_set(a_win_rate, b_win_rate, a_player: str, b_player: str, server: int):
     a_score = 0
     b_score = 0
 
     while True:
+
+        # Play one game
         if server == 1:
-            normalized_win_rate = a_win_rate
-            winner = run_game(normalized_win_rate)
+            winner = run_game(a_win_rate)
 
             if winner == 'server':
                 a_score += 1
-                # print(a_score)
-            elif winner == 'return':
+            else:
                 b_score += 1
-                # print(b_score)
-        else: 
-            normalized_win_rate = b_win_rate
-            winner = run_game(normalized_win_rate)
+
+        else:
+            winner = run_game(b_win_rate)
 
             if winner == 'server':
                 b_score += 1
-                # print(b_score)
-            elif winner == 'return':
+            else:
                 a_score += 1
-                # print(a_score)
-            
 
-        if (a_score >= 6 or b_score >= 6) and abs(a_score - b_score) >= 2:
-            if a_score > b_score:
-                # print(f'{a_player} scored: {a_score} and {b_player} scored: {b_score}')
-                return list((a_player, a_score, b_score))
-            elif b_score > a_score:
-                # print(f'{b_player} scored: {b_score} and {a_player} scored: {a_score}')
-                return list((b_player, a_score, b_score))
-            
+        # --------------------------------------------------
+        # NORMAL SET WIN
+        # Must reach 6 games AND lead by 2
+        # Examples:
+        # 6-0, 6-1, 6-2, 6-3, 6-4
+        # 6-5 is NOT enough
+        # --------------------------------------------------
+
+        if a_score >= 6 and a_score - b_score >= 2:
+            return [a_player, a_score, b_score]
+
+        if b_score >= 6 and b_score - a_score >= 2:
+            return [b_player, a_score, b_score]
+
+        # --------------------------------------------------
+        # 6-6 -> TIEBREAK
+        # --------------------------------------------------
+
         if a_score == 6 and b_score == 6:
-            return run_tiebreak(a_win_rate, b_win_rate, a_player, b_player)
+            return run_tiebreak(
+                a_win_rate,
+                b_win_rate,
+                a_player,
+                b_player,
+                server
+            )
 
-            
-        if server == 1:
-            server = 2
-        elif server == 2:
-            server = 1
+        # Alternate who serves the next game
+        server = 2 if server == 1 else 1
 
 
 with open(STATS_PATH, "r") as file:
@@ -266,17 +305,17 @@ def calculate_elo(player_a, player_b, court_type):
 
     return expected_a, expected_b
 
-def run_match(a, b, court_type):
-    player_a_win = 0
-    player_b_win = 0
-    player_a_lose = 0
-    player_b_lose = 0
+def log5(a_serve_rate, b_serve_rate):
+    b_vuln = 1 - b_serve_rate
+    return (a_serve_rate * b_vuln) / (a_serve_rate * b_vuln + (1 - a_serve_rate) * (1 - b_vuln))
 
-    player_a_set_score = 0
-    player_b_set_score = 0
+def run_match(a, b, court_type, match_length=3, stat_mult=0.4, elo_mult=0.6):
 
     player_a = a
     player_b = b
+
+    player_a_set_score = 0
+    player_b_set_score = 0
 
     player_a_stats = player_stats[player_a][court_type]
     player_b_stats = player_stats[player_b][court_type]
@@ -286,75 +325,199 @@ def run_match(a, b, court_type):
 
     player_a_win = player_a_stats["serve"] / player_a_stats["matches"]
     player_a_lose = player_a_stats["return"] / player_a_stats["matches"]
+
     a_ace = player_a_stats["aces"] / player_a_stats["matches"]
     a_df = player_a_stats["df"] / player_a_stats["matches"]
 
-
     player_b_win = player_b_stats["serve"] / player_b_stats["matches"]
     player_b_lose = player_b_stats["return"] / player_b_stats["matches"]
+
     b_ace = player_b_stats["aces"] / player_b_stats["matches"]
     b_df = player_b_stats["df"] / player_b_stats["matches"]
 
-    SCALING_FACTOR = 0.025
+    SCALING_FACTOR = 0.02
 
-    a_ace_adv = (a_ace - b_ace)
-    a_df_adv  = (a_df - b_df)
+    a_ace_adv = a_ace - b_ace
+    a_df_adv = a_df - b_df
 
-    ace_scale = (a_ace + b_ace) / 2
-    df_scale  = (a_df + b_df) / 2
+    ace_scale = (a_ace + b_ace) / 2 or 1
+    df_scale = (a_df + b_df) / 2 or 1
 
-    ace_scale = ace_scale if ace_scale != 0 else 1
-    df_scale  = df_scale if df_scale != 0 else 1
-
-    ace_effect = (a_ace_adv / ace_scale)
-    df_effect  = -(a_df_adv / df_scale) 
+    ace_effect = a_ace_adv / ace_scale
+    df_effect = -(a_df_adv / df_scale)
 
     player_a_adj = SCALING_FACTOR * (ace_effect + df_effect)
-    player_b_adj = -player_a_adj 
+    player_b_adj = -player_a_adj
 
-    total_strength = (player_a_win + player_a_lose + player_b_win + player_b_lose)
+    expected_a_prob, expected_b_prob = calculate_elo(
+        player_a,
+        player_b,
+        court_type
+    )
 
-    expected_a_prob, expected_b_prob = calculate_elo(player_a, player_b, court_type)
+    stat_based_rate_a = (
+        log5(player_a_win, player_b_lose)
+        + player_a_adj
+    )
 
-    normalized_a_win_rate = (0.4 * ((player_a_win + player_a_lose) / total_strength) + player_a_adj) + (0.6 * expected_a_prob)
+    elo_point_equivalent_a = match_prob_to_point_prob(
+        expected_a_prob,
+        player_a_win
+    )
 
-    normalized_b_win_rate = (0.4 * ((player_b_win + player_b_lose) / total_strength) + player_b_adj) + (0.6 * (expected_b_prob))
+    blended_logit_a = (
+        stat_mult * prob_to_logit(stat_based_rate_a)
+        + elo_mult * prob_to_logit(elo_point_equivalent_a)
+    )
 
-    # normalized_a_win_rate = ((player_a_win + player_a_lose) / (player_a_win + player_b_win)) + (player_a_adj)
-    # normalized_b_win_rate = ((player_b_win + player_b_lose) / (player_a_win + player_b_win)) + (player_b_adj)
-    # print(normalized_a_win_rate)
-    # print(normalized_b_win_rate)
+    normalized_a_win_rate = logit_to_prob(blended_logit_a)
 
-    normalized_a_win_rate = min(max(normalized_a_win_rate,0.02),0.98)
-    normalized_b_win_rate = min(max(normalized_b_win_rate,0.02),0.98)
+    stat_based_rate_b = (
+        log5(player_b_win, player_a_lose)
+        + player_b_adj
+    )
 
+    elo_point_equivalent_b = match_prob_to_point_prob(
+        expected_b_prob,
+        player_b_win
+    )
+
+    blended_logit_b = (
+        stat_mult * prob_to_logit(stat_based_rate_b)
+        + elo_mult * prob_to_logit(elo_point_equivalent_b)
+    )
+
+    normalized_b_win_rate = logit_to_prob(blended_logit_b)
+
+    normalized_a_win_rate = min(
+        max(normalized_a_win_rate, 0.02),
+        0.98
+    )
+
+    normalized_b_win_rate = min(
+        max(normalized_b_win_rate, 0.02),
+        0.98
+    )
 
     scores = []
 
     while True:
-        server = 1 if random.random() < 0.5 else 2
-        winner = run_set(normalized_a_win_rate, normalized_b_win_rate, player_a, player_b, server)
-        scores.append(winner[1])
-        scores.append(winner[2])
 
-        if winner[0] == player_a:
+        # Randomly choose first server for each set
+        server = 1 if random.random() < 0.5 else 2
+
+        set_result = run_set(
+            normalized_a_win_rate,
+            normalized_b_win_rate,
+            player_a,
+            player_b,
+            server
+        )
+
+        set_winner = set_result[0]
+        a_set_games = set_result[1]
+        b_set_games = set_result[2]
+
+        scores.append(a_set_games)
+        scores.append(b_set_games)
+
+        if set_winner == player_a:
             player_a_set_score += 1
-        elif winner[0] == player_b:
+        else:
             player_b_set_score += 1
 
-        if player_a_set_score >= 3:
-            # print(f'Winner of the match is {player_a}')
-            # print(f'{player_a}: {player_a_set_score}')
-            # print(f'{player_b}: {player_b_set_score}')
-             #print(list((player_a, player_b, scores)))
-            return list((player_a, player_b, scores))
-        elif player_b_set_score >= 3:
-            # print(f'Winner of the match is {player_b}')
-            # print(f'{player_a}: {player_a_set_score}')
-            # print(f'{player_b}: {player_b_set_score}')
-            # print(list((player_b, player_a, scores)))
-            return list((player_b, player_a, scores))
- 
+        # First to 3 sets wins the match
+        if player_a_set_score >= match_length:
+            return [
+                player_a,
+                player_b,
+                scores
+            ]
+
+        if player_b_set_score >= match_length:
+            return [
+                player_b,
+                player_a,
+                scores
+            ]
+        
+def predict_winner(player_a, player_b, court_type, iterations=200):
+
+    a_wins = 0
+    b_wins = 0
+
+    simulated_matches = []
+
+    for _ in range(iterations):
+
+        result = run_match(
+            player_a,
+            player_b,
+            court_type
+        )
+
+        if result is None:
+            return None
+
+        simulated_matches.append(result)
+
+        if result[0] == player_a:
+            a_wins += 1
+        else:
+            b_wins += 1
+
+    total = a_wins + b_wins
+
+    if total == 0:
+        return None
+
+    raw_prob_a = a_wins / total
+    raw_prob_b = b_wins / total
+
+    calibrated_a = float(
+        iso.predict(
+            prob_to_logit(
+                np.array([raw_prob_a])
+            )
+        )[0]
+    )
+
+    calibrated_b = float(
+        iso.predict(
+            prob_to_logit(
+                np.array([raw_prob_b])
+            )
+        )[0]
+    )
+
+    # Determine predicted winner
+    predicted_winner = (
+        player_a
+        if calibrated_a >= calibrated_b
+        else player_b
+    )
+
+    # IMPORTANT:
+    # Pick a sample match that was actually won
+    # by the predicted winner.
+    matching_matches = [
+        match
+        for match in simulated_matches
+        if match[0] == predicted_winner
+    ]
+
+    if not matching_matches:
+        return None
+
+    sample_match = random.choice(matching_matches)
+
+    return {
+        "winner": predicted_winner,
+        "prob_a": calibrated_a,
+        "prob_b": calibrated_b,
+        "raw_prob_a": raw_prob_a,
+        "sample_match": sample_match,
+    }
 
 def run_monte_carlo_simulation(iterations):
     correct_predictions = 0

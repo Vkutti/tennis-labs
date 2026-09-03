@@ -6,6 +6,9 @@ import random
 from sklearn.isotonic import IsotonicRegression
 from sklearn.model_selection import train_test_split
 
+import joblib
+import os as _os
+
 players = ['Tommy Haas', 'Juan Balcells', 'Alberto Martin', 'Juan Carlos Ferrero', 'Michael Chang', 'Magnus Gustafsson', 'Thomas Johansson', 'Sjeng Schalken', 'Tomas Behrend',
             'Gaston Gaudio', 'Jiri Novak', 'Marc Rosset', 'John Van Lottum', 'Jan Michael Gambill', 'Magnus Norman', 'Andrea Gaudenzi', 'Albert Portas', 'Galo Blanco', 
             'Markus Hantschk', 'Andrei Medvedev', 'Christophe Rochus', 'Andrei Pavel', 'Juan Antonio Marin', 'Markus Hipfl', 'Stefan Koubek', 'Andrew Ilie', 'Sergi Bruguera', 
@@ -546,6 +549,9 @@ calibrated_log_iso = list(zip(calibrated_probs_iso, y_test))
 
 # calibration_report(calibrated_log_platt)
 calibration_report(calibrated_log_iso)
+
+
+joblib.dump(iso, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "calibration_model.pkl"))
 
 # print(np.mean(losses))
 
