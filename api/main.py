@@ -279,16 +279,14 @@ with open(ELO_PATH, "r") as file:
 losses = []
 
 def calculate_elo(player_a, player_b, court_type):
-    elo_a = player_elo[player_a][court_type][-1] if player_elo[player_a][court_type] else 1500
-    elo_b = player_elo[player_b][court_type][-1] if player_elo[player_b][court_type] else 1500
+    elo_a = player_elo.get(player_a, {}).get(court_type) or 1500
+    elo_b = player_elo.get(player_b, {}).get(court_type) or 1500
 
     expected_a = 1 / (1 + 10 ** ((elo_b - elo_a) / 400))
     expected_b = 1 / (1 + 10 ** ((elo_a - elo_b) / 400))
 
     loss = -np.log(expected_a)
     losses.append(loss)
-
-    # print(expected_a, expected_b)
 
     return expected_a, expected_b
 
@@ -307,20 +305,20 @@ def run_match(a, b, court_type, match_length=3, stat_mult=0.4, elo_mult=0.6):
     player_a_stats = player_stats[player_a][court_type]
     player_b_stats = player_stats[player_b][court_type]
 
-    if player_a_stats["matches"] == 0 or player_b_stats["matches"] == 0:
+    if player_a_stats["effective_matches"] == 0 or player_b_stats["effective_matches"] == 0:
         return None
 
-    player_a_win = player_a_stats["serve"] / player_a_stats["matches"]
-    player_a_lose = player_a_stats["return"] / player_a_stats["matches"]
+    player_a_win = player_a_stats["serve_rate"]
+    player_a_lose = player_a_stats["return_rate"] 
 
-    a_ace = player_a_stats["aces"] / player_a_stats["matches"]
-    a_df = player_a_stats["df"] / player_a_stats["matches"]
+    a_ace = player_a_stats["ace_rate"]
+    a_df = player_a_stats["df_rate"]
 
-    player_b_win = player_b_stats["serve"] / player_b_stats["matches"]
-    player_b_lose = player_b_stats["return"] / player_b_stats["matches"]
+    player_b_win = player_b_stats["serve_rate"] 
+    player_b_lose = player_b_stats["return_rate"] 
 
-    b_ace = player_b_stats["aces"] / player_b_stats["matches"]
-    b_df = player_b_stats["df"] / player_b_stats["matches"]
+    b_ace = player_b_stats["ace_rate"]
+    b_df = player_b_stats["df_rate"] 
 
     SCALING_FACTOR = 0.02
 
@@ -556,4 +554,4 @@ def run_monte_carlo_simulation(iterations):
 
  
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)

@@ -465,6 +465,7 @@ def run_match(a, b, a_stats, b_stats, court_type, stat_mult, elo_mult, match_len
 
     if a_stats is None or b_stats is None:
         return None
+    
     player_a_win, player_a_lose, a_ace, a_df = a_stats
     player_b_win, player_b_lose, b_ace, b_df = b_stats
 
