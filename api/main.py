@@ -251,23 +251,12 @@ def run_set(a_win_rate, b_win_rate, a_player, b_player, server):
             else:
                 a_score += 1
 
-        # --------------------------------------------------
-        # NORMAL SET WIN
-        # Must reach 6 games AND lead by 2
-        # Examples:
-        # 6-0, 6-1, 6-2, 6-3, 6-4
-        # 6-5 is NOT enough
-        # --------------------------------------------------
 
         if a_score >= 6 and a_score - b_score >= 2:
             return [a_player, a_score, b_score]
 
         if b_score >= 6 and b_score - a_score >= 2:
             return [b_player, a_score, b_score]
-
-        # --------------------------------------------------
-        # 6-6 -> TIEBREAK
-        # --------------------------------------------------
 
         if a_score == 6 and b_score == 6:
             return run_tiebreak(
@@ -278,7 +267,6 @@ def run_set(a_win_rate, b_win_rate, a_player, b_player, server):
                 server
             )
 
-        # Alternate who serves the next game
         server = 2 if server == 1 else 1
 
 
@@ -291,7 +279,6 @@ with open(ELO_PATH, "r") as file:
 losses = []
 
 def calculate_elo(player_a, player_b, court_type):
-    k = 32
     elo_a = player_elo[player_a][court_type][-1] if player_elo[player_a][court_type] else 1500
     elo_b = player_elo[player_b][court_type][-1] if player_elo[player_b][court_type] else 1500
 
@@ -442,7 +429,6 @@ def run_match(a, b, court_type, match_length=3, stat_mult=0.4, elo_mult=0.6):
             ]
         
 def predict_winner(player_a, player_b, court_type, iterations=200):
-
     a_wins = 0
     b_wins = 0
 
@@ -497,9 +483,6 @@ def predict_winner(player_a, player_b, court_type, iterations=200):
         else player_b
     )
 
-    # IMPORTANT:
-    # Pick a sample match that was actually won
-    # by the predicted winner.
     matching_matches = [
         match
         for match in simulated_matches
@@ -510,6 +493,8 @@ def predict_winner(player_a, player_b, court_type, iterations=200):
         return None
 
     sample_match = random.choice(matching_matches)
+
+    print(calibrated_a, calibrated_b, raw_prob_a, raw_prob_b)
 
     return {
         "winner": predicted_winner,

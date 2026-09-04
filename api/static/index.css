@@ -23,12 +23,22 @@ body {
   font-family: "Inter", Arial, sans-serif;
   color: var(--text);
   background:
-    radial-gradient(1200px 500px at 10% -15%, rgba(34, 197, 94, 0.18), transparent 65%),
-    radial-gradient(800px 450px at 100% 0%, rgba(255, 255, 255, 0.08), transparent 60%),
+    radial-gradient(
+      1200px 500px at 10% -15%,
+      rgba(34, 197, 94, 0.18),
+      transparent 65%
+    ),
+    radial-gradient(
+      800px 450px at 100% 0%,
+      rgba(255, 255, 255, 0.08),
+      transparent 60%
+    ),
     var(--bg);
   opacity: 1;
   transform: translateY(0);
-  transition: opacity 280ms ease, transform 280ms ease;
+  transition:
+    opacity 280ms ease,
+    transform 280ms ease;
 }
 
 body.transition-enabled:not(.is-ready) {
@@ -77,13 +87,11 @@ body.transition-enabled.is-leaving {
 /* TOM SELECT TENNISLAB STYLING */
 /* ============================= */
 
-
 /* Container */
 .ts-wrapper {
   width: 100%;
   font-family: "Inter", Arial, sans-serif;
 }
-
 
 /* Main input box */
 .ts-control {
@@ -109,60 +117,41 @@ body.transition-enabled.is-leaving {
     transform 180ms ease;
 }
 
-
 /* Hover */
 .ts-control:hover {
-  border-color: rgba(34,197,94,0.35) !important;
+  border-color: rgba(34, 197, 94, 0.35) !important;
 }
-
 
 /* Focus */
 .ts-wrapper.focus .ts-control {
-
   border-color: var(--accent) !important;
 
-  box-shadow:
-    0 0 0 3px rgba(34,197,94,0.25) !important;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.25) !important;
 
   transform: translateY(-1px);
-
 }
-
-
 
 /* Selected player text */
 .ts-control .item {
-
   color: var(--text) !important;
 
   font-weight: 500;
-
 }
-
-
 
 /* Search text while typing */
 .ts-control input {
-
   color: var(--text) !important;
 
   font-family: "Inter", Arial, sans-serif;
-
 }
-
 
 .ts-control input::placeholder {
-
   color: var(--muted);
-
 }
-
-
 
 /* Dropdown menu */
 
 .ts-dropdown {
-
   margin-top: 6px !important;
 
   border-radius: 14px !important;
@@ -174,100 +163,65 @@ body.transition-enabled.is-leaving {
   box-shadow: var(--shadow);
 
   overflow: hidden;
-
 }
-
-
 
 /* Dropdown options */
 
 .ts-dropdown .option {
-
   padding: 12px 14px;
 
   color: var(--text);
 
   font-size: 0.95rem;
-
 }
-
-
 
 /* Hover option */
 
 .ts-dropdown .active {
-
-  background:
-    rgba(34,197,94,0.18) !important;
+  background: rgba(34, 197, 94, 0.18) !important;
 
   color: white !important;
-
 }
-
-
 
 /* Selected option */
 
 .ts-dropdown .selected {
-
-  background:
-    rgba(34,197,94,0.25) !important;
-
+  background: rgba(34, 197, 94, 0.25) !important;
 }
-
-
 
 /* Dropdown scrollbar */
 
 .ts-dropdown-content::-webkit-scrollbar {
-
   width: 8px;
-
 }
-
 
 .ts-dropdown-content::-webkit-scrollbar-thumb {
-
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
 
   border-radius: 10px;
-
 }
-
 
 /* Court selector spacing */
 
 .court-group {
-
   width: 100%;
 
   margin-top: 4px;
-
 }
-
-
 
 /* Make all selectors same height */
 
 .ts-control,
 select {
-
   min-height: 46px;
-
 }
-
-
 
 /* Mobile adjustments */
 
 @media (max-width: 780px) {
-
   .ts-control {
-
     padding: 12px !important;
-
   }
-
 }
 
 .title h1 {
@@ -299,12 +253,17 @@ select {
   flex-direction: column;
   align-items: center;
   gap: 22px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent), var(--surface);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent),
+    var(--surface);
   border: 1px solid var(--border);
   border-radius: 20px;
   box-shadow: var(--shadow);
   padding: 24px;
-  transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease,
+    border-color 220ms ease;
 }
 
 .match-form:hover {
@@ -358,7 +317,10 @@ select {
   color: var(--text);
   font-size: 0.95rem;
   outline: none;
-  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
 }
 
 select:focus {
@@ -378,7 +340,10 @@ button {
   font-weight: 700;
   color: #06110a;
   background: linear-gradient(180deg, #4ade80, #22c55e);
-  transition: transform 180ms ease, filter 180ms ease, box-shadow 180ms ease;
+  transition:
+    transform 180ms ease,
+    filter 180ms ease,
+    box-shadow 180ms ease;
   box-shadow: 0 10px 20px rgba(34, 197, 94, 0.35);
   display: inline-flex;
   align-items: center;
@@ -445,7 +410,12 @@ button.is-loading .button-spinner {
   content: "";
   display: block;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(34, 197, 94, 0.48), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(34, 197, 94, 0.48),
+    transparent
+  );
 }
 
 .header {
@@ -475,7 +445,9 @@ button.is-loading .button-spinner {
   gap: 14px;
   padding: 16px 18px;
   border-bottom: 1px solid var(--border);
-  transition: background-color 260ms ease, transform 260ms ease;
+  transition:
+    background-color 260ms ease,
+    transform 260ms ease;
 }
 
 .player:last-of-type {
@@ -483,7 +455,11 @@ button.is-loading .button-spinner {
 }
 
 .player.winner {
-  background: linear-gradient(90deg, rgba(34, 197, 94, 0.16), rgba(34, 197, 94, 0.04));
+  background: linear-gradient(
+    90deg,
+    rgba(34, 197, 94, 0.16),
+    rgba(34, 197, 94, 0.04)
+  );
 }
 
 .player.winner.final-highlight {
@@ -543,7 +519,9 @@ button.is-loading .button-spinner {
 }
 
 .sets.is-animating div.show.winner-set {
-  animation: fadeGrow 380ms ease forwards, winnerPulse 420ms ease 120ms;
+  animation:
+    fadeGrow 380ms ease forwards,
+    winnerPulse 420ms ease 120ms;
 }
 
 .player.winner .sets div.winner-set {
@@ -583,7 +561,9 @@ button.is-loading .button-spinner {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transition: opacity 200ms ease, visibility 200ms ease;
+  transition:
+    opacity 200ms ease,
+    visibility 200ms ease;
 }
 
 .page-loader.visible {
@@ -613,7 +593,11 @@ button.is-loading .button-spinner {
   height: 46vh;
   left: -8vw;
   top: -10vh;
-  background: radial-gradient(circle at center, rgba(34, 197, 94, 0.36), rgba(34, 197, 94, 0));
+  background: radial-gradient(
+    circle at center,
+    rgba(34, 197, 94, 0.36),
+    rgba(34, 197, 94, 0)
+  );
 }
 
 .aurora-layer-2 {
@@ -621,7 +605,11 @@ button.is-loading .button-spinner {
   height: 44vh;
   right: -12vw;
   top: 8vh;
-  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0));
+  background: radial-gradient(
+    circle at center,
+    rgba(255, 255, 255, 0.24),
+    rgba(255, 255, 255, 0)
+  );
 }
 
 .aurora-layer-3 {
@@ -629,7 +617,11 @@ button.is-loading .button-spinner {
   height: 52vh;
   left: 18vw;
   bottom: -18vh;
-  background: radial-gradient(circle at center, rgba(22, 163, 74, 0.24), rgba(22, 163, 74, 0));
+  background: radial-gradient(
+    circle at center,
+    rgba(22, 163, 74, 0.24),
+    rgba(22, 163, 74, 0)
+  );
 }
 
 @keyframes revealUp {

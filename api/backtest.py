@@ -83,149 +83,300 @@ players = ['Tommy Haas', 'Juan Balcells', 'Alberto Martin', 'Juan Carlos Ferrero
             'Chun Hsin Tseng', 'Lukas Klein', 'Arthur Cazaux', 'Shintaro Mochizuki', 'Hugo Grenier', 'Luca Nardi', 'Aleksandar Kovacevic']
 
 
-def run_tiebreak(a_win_rate, b_win_rate, a_player: str, b_player: str, server):
+def run_tiebreak(a_win_rate, b_win_rate, a_player, b_player, first_server):
+
     a_points = 0
     b_points = 0
-    total_points = 0
-    
+    point_number = 0
+
     while True:
-        if server == 1:
-            win_rate = a_win_rate
-            winner = 'a' if random.random() <= win_rate else 'b'
+        if point_number == 0:
+            server = first_server
         else:
-            win_rate = b_win_rate
-            winner = 'b' if random.random() <= win_rate else 'a'
-        
+            block = (point_number - 1) // 2
+
+            if block % 2 == 0:
+                server = 2 if first_server == 1 else 1
+            else:
+                server = first_server
+
+        if server == 1:
+            winner = 'a' if random.random() < a_win_rate else 'b'
+        else:
+            winner = 'b' if random.random() < b_win_rate else 'a'
+
         if winner == 'a':
             a_points += 1
         else:
             b_points += 1
-        
-        if (a_points >= 7 or b_points >= 7) and abs(a_points - b_points) >= 2:
-            if a_points > b_points:
-                return list((a_player, 7, b_points))
-            else:
-                return list((b_player, a_points, 7))
-        
-        total_points += 1
 
-        if total_points >= 1 and total_points % 2 == 1:
-            server = 2 if server == 1 else 1
+        point_number += 1
+
+        if (a_points >= 7 or b_points >= 7) and abs(a_points - b_points) >= 2:
+
+            if a_points > b_points:
+                return [a_player, 7, 6]
+            else:
+                return [b_player, 6, 7]
 
 
 def run_game(server_win_rate):
     server_points, return_points = 0, 0
-    
+
     while True:
         if random.random() <= server_win_rate:
             server_points += 1
         else:
             return_points += 1
-        
+
         if server_points >= 4 or return_points >= 4:
             if abs(server_points - return_points) >= 2:
                 return 'server' if server_points > return_points else 'return'
 
         
 
-def run_set(a_win_rate, b_win_rate, a_player: str, b_player: str, server: int):
+def run_set(a_win_rate, b_win_rate, a_player, b_player, server):
+
     a_score = 0
     b_score = 0
 
     while True:
         if server == 1:
-            normalized_win_rate = a_win_rate
-            winner = run_game(normalized_win_rate)
+            winner = run_game(a_win_rate)
 
             if winner == 'server':
                 a_score += 1
-                # print(a_score)
-            elif winner == 'return':
+            else:
                 b_score += 1
-                # print(b_score)
-        else: 
-            normalized_win_rate = b_win_rate
-            winner = run_game(normalized_win_rate)
+
+        else:
+            winner = run_game(b_win_rate)
 
             if winner == 'server':
                 b_score += 1
-                # print(b_score)
-            elif winner == 'return':
+            else:
                 a_score += 1
-                # print(a_score)
-            
 
-        if (a_score >= 6 or b_score >= 6) and abs(a_score - b_score) >= 2:
-            if a_score > b_score:
-                # print(f'{a_player} scored: {a_score} and {b_player} scored: {b_score}')
-                return list((a_player, a_score, b_score))
-            elif b_score > a_score:
-                # print(f'{b_player} scored: {b_score} and {a_player} scored: {a_score}')
-                return list((b_player, a_score, b_score))
-            
+
+        if a_score >= 6 and a_score - b_score >= 2:
+            return [a_player, a_score, b_score]
+
+        if b_score >= 6 and b_score - a_score >= 2:
+            return [b_player, a_score, b_score]
+
         if a_score == 6 and b_score == 6:
-            next_server = 2 if server == 1 else 1
-            return run_tiebreak(a_win_rate, b_win_rate, a_player, b_player, next_server)
+            return run_tiebreak(
+                a_win_rate,
+                b_win_rate,
+                a_player,
+                b_player,
+                server
+            )
 
-            
-        if server == 1:
-            server = 2
-        elif server == 2:
-            server = 1
+        server = 2 if server == 1 else 1
 
 court_types = ['Hard', 'Clay', 'Grass', 'Carpet']
 
-player_stats = {
+player_match_count = {
     p: {
-        surface: {
-            "serve": 0,
-            "return": 0,
-            "aces": 0,
-            "df": 0,
-            "matches": 0,
-        }
+        surface: 0
         for surface in court_types
     }
     for p in players
 }
 
+
+HALF_LIFE_DAYS = 180
+
+
+def normalize_date(date):
+    if pd.isna(date):
+        return None
+
+    return pd.Timestamp(date).normalize()
+
+
+def recency_weight(match_date, as_of_date, half_life_days=HALF_LIFE_DAYS):
+    match_date = normalize_date(match_date)
+    as_of_date = normalize_date(as_of_date)
+
+    if match_date is None or as_of_date is None:
+        return 0.0
+
+    days_old = (as_of_date - match_date).days
+
+    # Never allow future matches to influence a prediction.
+    if days_old < 0:
+        return 0.0
+
+    return 2.0 ** (-days_old / half_life_days)
+
+
+def get_weighted_stats(
+    player,
+    surface,
+    as_of_date,
+    half_life_days=HALF_LIFE_DAYS
+):
+
+    as_of_date = normalize_date(as_of_date)
+
+    history = player_match_history[player][surface]
+
+    if not history:
+        return None
+
+    weighted_values = []
+    total_weight = 0.0
+
+    for match_date, serve_rate, return_rate, ace_rate, df_rate in history:
+
+        match_date = normalize_date(match_date)
+
+        # Prevent future-data leakage.
+        if match_date is None or match_date > as_of_date:
+            continue
+
+        weight = recency_weight(
+            match_date,
+            as_of_date,
+            half_life_days
+        )
+
+        if weight <= 0:
+            continue
+
+        weighted_values.append(
+            (
+                weight,
+                serve_rate,
+                return_rate,
+                ace_rate,
+                df_rate
+            )
+        )
+
+        total_weight += weight
+
+    if total_weight <= 0:
+        return None
+
+    serve_rate = sum(
+        weight * serve
+        for weight, serve, ret, ace, df in weighted_values
+    ) / total_weight
+
+    return_rate = sum(
+        weight * ret
+        for weight, serve, ret, ace, df in weighted_values
+    ) / total_weight
+
+    ace_rate = sum(
+        weight * ace
+        for weight, serve, ret, ace, df in weighted_values
+    ) / total_weight
+
+    df_rate = sum(
+        weight * df
+        for weight, serve, ret, ace, df in weighted_values
+    ) / total_weight
+
+    return (
+        serve_rate,
+        return_rate,
+        ace_rate,
+        df_rate
+    )
+
+
+
+player_match_history = {
+    player: {
+        surface: []
+        for surface in court_types
+    }
+    for player in players
+}
+
+
 def build_stats(row):
     winner = str(row.winner_name).strip()
     loser = str(row.loser_name).strip()
-    court_surface = str(row.surface)
-    if court_surface not in court_types:
+    surface = str(row.surface).strip()
+
+    if winner not in player_match_history or loser not in player_match_history:
+        return
+
+    if surface not in court_types:
+        return
+
+    match_date = normalize_date(row.tourney_date)
+
+    if match_date is None:
         return
 
     try:
-        w_svpt, w_1st, w_2nd = float(row.w_svpt), float(row.w_1stWon), float(row.w_2ndWon)
-        l_svpt, l_1st, l_2nd = float(row.l_svpt), float(row.l_1stWon), float(row.l_2ndWon)
-        w_ace, w_df = float(row.w_ace), float(row.w_df)
-        l_ace, l_df = float(row.l_ace), float(row.l_df)
+        w_svpt = float(row.w_svpt)
+        w_1st = float(row.w_1stWon)
+        w_2nd = float(row.w_2ndWon)
+        w_ace = float(row.w_ace)
+        w_df = float(row.w_df)
+
+        l_svpt = float(row.l_svpt)
+        l_1st = float(row.l_1stWon)
+        l_2nd = float(row.l_2ndWon)
+        l_ace = float(row.l_ace)
+        l_df = float(row.l_df)
+
     except (ValueError, TypeError):
         return
 
-    if w_svpt <= 0 or l_svpt <= 0:
+    if (
+        w_svpt <= 0
+        or l_svpt <= 0
+        or any(
+            math.isnan(x)
+            for x in [
+                w_svpt, w_1st, w_2nd, w_ace, w_df,
+                l_svpt, l_1st, l_2nd, l_ace, l_df
+            ]
+        )
+    ):
         return
 
     w_serve_rate = (w_1st + w_2nd) / w_svpt
     l_serve_rate = (l_1st + l_2nd) / l_svpt
 
-    w_return_rate = 1 - l_serve_rate
-    l_return_rate = 1 - w_serve_rate
 
-    for player, surface, serve_v, return_v, aces, df in [
-        (winner, court_surface, w_serve_rate, w_return_rate, w_ace, w_df),
-        (loser,  court_surface, l_serve_rate, l_return_rate, l_ace, l_df),
-    ]:
-        if player in player_stats and not math.isnan(serve_v) and not math.isnan(return_v):
-            s = player_stats[player][surface]
-            s["serve"] += serve_v
-            s["return"] += return_v
-            s["aces"] += aces
-            s["df"] += df
-            s["matches"] += 1
-    
-    # print(total_all_data_dict)
+    w_return_rate = 1.0 - l_serve_rate
+    l_return_rate = 1.0 - w_serve_rate
+
+    w_ace_rate = w_ace / w_svpt
+    l_ace_rate = l_ace / l_svpt
+
+    w_df_rate = w_df / w_svpt
+    l_df_rate = l_df / l_svpt
+
+
+    player_match_history[winner][surface].append(
+        (
+            match_date,
+            w_serve_rate,
+            w_return_rate,
+            w_ace_rate,
+            w_df_rate
+        )
+    )
+
+    player_match_history[loser][surface].append(
+        (
+            match_date,
+            l_serve_rate,
+            l_return_rate,
+            l_ace_rate,
+            l_df_rate
+        )
+    )
 
 player_elo = {}
 
@@ -257,11 +408,8 @@ def build_elo(row):
     winner_matches = 1
     loser_matches = 1
 
-    if player_stats[row.winner_name][court_type]["matches"] != 0:
-        winner_matches = player_stats[row.winner_name][court_type]["matches"]
-    
-    if player_stats[row.loser_name][court_type]["matches"] != 0:
-        loser_matches = player_stats[row.loser_name][court_type]["matches"]
+    player_match_count[row.winner_name][court_type] += 1
+    player_match_count[row.loser_name][court_type] += 1
         
 
     K_multiplier_winner = max(32, 256 / np.sqrt(winner_matches + 1))
@@ -301,11 +449,9 @@ def calculate_elo(player_a, player_b, court_type):
     expected_a = 1 / (1 + 10 ** ((elo_b - elo_a) / 400))
     expected_b = 1 / (1 + 10 ** ((elo_a - elo_b) / 400))
 
-    # print(expected_a, expected_b)
-
     return expected_a, expected_b
 
-def run_match(a, b, court_type, stat_mult, elo_mult, match_length):
+def run_match(a, b, a_stats, b_stats, court_type, stat_mult, elo_mult, match_length, match_date):
     player_a_win = 0
     player_b_win = 0
     player_a_lose = 0
@@ -317,24 +463,10 @@ def run_match(a, b, court_type, stat_mult, elo_mult, match_length):
     player_a = a
     player_b = b
 
-
-
-    player_a_stats = player_stats[player_a][court_type]
-    player_b_stats = player_stats[player_b][court_type]
-
-    if player_a_stats["matches"] == 0 or player_b_stats["matches"] == 0:
+    if a_stats is None or b_stats is None:
         return None
-
-    player_a_win = player_a_stats["serve"] / player_a_stats["matches"]
-    player_a_lose = player_a_stats["return"] / player_a_stats["matches"]
-    a_ace = player_a_stats["aces"] / player_a_stats["matches"]
-    a_df = player_a_stats["df"] / player_a_stats["matches"]
-
-
-    player_b_win = player_b_stats["serve"] / player_b_stats["matches"]
-    player_b_lose = player_b_stats["return"] / player_b_stats["matches"]
-    b_ace = player_b_stats["aces"] / player_b_stats["matches"]
-    b_df = player_b_stats["df"] / player_b_stats["matches"]
+    player_a_win, player_a_lose, a_ace, a_df = a_stats
+    player_b_win, player_b_lose, b_ace, b_df = b_stats
 
     SCALING_FACTOR = 0.02
 
@@ -437,9 +569,11 @@ def run_monte_carlo_simulation(iterations):
     # data = data[["surface", "winner_name", "loser_name"]].dropna()
 
     for row in data.itertuples(index=False):
+        
         winner = str(row.winner_name).strip()
         loser = str(row.loser_name).strip()
         length = row.best_of
+        
         
         if winner not in player_names or loser not in player_names:
             continue
@@ -459,8 +593,11 @@ def run_monte_carlo_simulation(iterations):
         actual_winner_wins = 0
         actual_loser_wins = 0
 
-        for _ in range(iterations):
-            match = run_match(player_a, player_b, row.surface, 0.4, 0.6, ((length + 1) // 2))
+        a_stats = get_weighted_stats(player_a, row.surface, as_of_date=row.tourney_date)
+        b_stats = get_weighted_stats(player_b, row.surface, as_of_date=row.tourney_date)
+
+        for _ in range(iterations):            
+            match = run_match(player_a, player_b, a_stats, b_stats, row.surface, 0.4, 0.6, ((length + 1) // 2), row.tourney_date)
 
             if match is None:
                 continue
@@ -518,9 +655,7 @@ def calibration_report(log, n_bins=20):
     brier = np.mean((probs - outcomes) ** 2)
     print(f"\nBrier score: {brier:.4f}")
 
-
-
-run_monte_carlo_simulation(51)
+run_monte_carlo_simulation(200)
 
 
 probs = np.array([p for p,_ in calibration_log])
@@ -533,7 +668,7 @@ X_train, X_test, y_train, y_test = train_test_split(
     labels,
     test_size=0.3,
     random_state=42
-)
+)   
 
 # model = LogisticRegression()
 # model.fit(X_train, y_train)
@@ -551,7 +686,42 @@ calibrated_log_iso = list(zip(calibrated_probs_iso, y_test))
 calibration_report(calibrated_log_iso)
 
 
-joblib.dump(iso, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "calibration_model.pkl"))
+import json
 
+def export_production_data(as_of_date=None):
+    if as_of_date is None:
+        as_of_date = pd.Timestamp.today().normalize()
+
+    stats_out = {}
+    elo_out = {}
+
+    for player in players:
+        stats_out[player] = {}
+        elo_out[player] = {}
+        for surface in court_types:
+            weighted = get_weighted_stats(player, surface, as_of_date=as_of_date)
+            if weighted is None:
+                stats_out[player][surface] = {
+                    "serve_rate": None, "return_rate": None,
+                    "ace_rate": None, "df_rate": None,
+                    "effective_matches": 0,
+                }
+            else:
+                serve_rate, return_rate, ace_rate, df_rate = weighted
+                stats_out[player][surface] = {
+                    "serve_rate": serve_rate, "return_rate": return_rate,
+                    "ace_rate": ace_rate, "df_rate": df_rate,
+                    "effective_matches": len(player_match_history[player][surface]),
+                }
+            elo_history = player_elo.get(player, {}).get(surface, [1200])
+            elo_out[player][surface] = elo_history[-1] if elo_history else 1200
+
+    base_dir = _os.path.dirname(_os.path.abspath(__file__))
+    with open(_os.path.join(base_dir, "player_surface_stats.json"), "w") as f:
+        json.dump(stats_out, f)
+    with open(_os.path.join(base_dir, "player_surface_elo.json"), "w") as f:
+        json.dump(elo_out, f)
+
+export_production_data()
 # print(np.mean(losses))
 
