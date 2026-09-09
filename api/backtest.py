@@ -162,7 +162,6 @@ def get_weighted_stats(
 
         match_date = normalize_date(match_date)
 
-        # Prevent future-data leakage.
         if match_date is None or match_date > as_of_date:
             continue
 
@@ -425,19 +424,15 @@ def run_match(a, b, a_stats, b_stats, court_type, stat_mult, elo_mult, match_len
 
     stat_based_rate_a = log5(player_a_win, player_b_lose) + player_a_adj
     elo_point_equivalent_a = match_prob_to_point_prob(expected_a_prob, player_a_win)
-    blended_logit_a = stat_mult * prob_to_logit(stat_based_rate_a) + elo_mult * prob_to_logit(elo_point_equivalent_a)
+    blended_logit_a = (stat_mult * prob_to_logit(stat_based_rate_a)) + (elo_mult * prob_to_logit(elo_point_equivalent_a))
     normalized_a_win_rate = logit_to_prob(blended_logit_a)
 
 
     stat_based_rate_b = log5(player_b_win, player_a_lose) + player_b_adj
     elo_point_equivalent_b = match_prob_to_point_prob(expected_b_prob, player_b_win)
-    blended_logit_b = stat_mult * prob_to_logit(stat_based_rate_b) + elo_mult * prob_to_logit(elo_point_equivalent_b)
+    blended_logit_b = (stat_mult * prob_to_logit(stat_based_rate_b)) + (elo_mult * prob_to_logit(elo_point_equivalent_b))
     normalized_b_win_rate = logit_to_prob(blended_logit_b)
 
-    # normalized_a_win_rate = ((player_a_win + player_a_lose) / (player_a_win + player_b_win)) + (player_a_adj)
-    # normalized_b_win_rate = ((player_b_win + player_b_lose) / (player_a_win + player_b_win)) + (player_b_adj)
-    # print(normalized_a_win_rate)
-    # print(normalized_b_win_rate)
 
     normalized_a_win_rate = min(max(normalized_a_win_rate,0.02),0.98)
     normalized_b_win_rate = min(max(normalized_b_win_rate,0.02),0.98)
@@ -527,7 +522,7 @@ def run_monte_carlo_simulation(iterations):
         b_stats = get_weighted_stats(player_b, row.surface, as_of_date=row.tourney_date)
 
         for _ in range(iterations):            
-            match = run_match(player_a, player_b, a_stats, b_stats, row.surface, 0.4, 0.6, ((length + 1) // 2), row.tourney_date)
+            match = run_match(player_a, player_b, a_stats, b_stats, row.surface, 0.5, 0.5, ((length + 1) // 2), row.tourney_date)
 
             if match is None:
                 continue
@@ -554,7 +549,6 @@ def run_monte_carlo_simulation(iterations):
                 correct_predictions += 1
             else:
                 incorrect_predictions += 1
-        # else: no prior data for one of the players — skip this match's accuracy/calibration entirely
 
         build_stats(row)
         build_elo(row)
@@ -587,7 +581,6 @@ def calibration_report(log, n_bins=20):
 
 run_monte_carlo_simulation(200)
 
-
 probs = np.array([p for p,_ in calibration_log])
 labels = np.array([y for _,y in calibration_log])
 
@@ -596,7 +589,7 @@ X = prob_to_logit(probs).reshape(-1,1)
 X_train, X_test, y_train, y_test = train_test_split(
     X,
     labels,
-    test_size=0.3,
+    test_size=0.1,
     random_state=42
 )   
 
